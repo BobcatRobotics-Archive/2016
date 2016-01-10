@@ -2,7 +2,10 @@
 package org.usfirst.frc.team177.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -19,6 +22,28 @@ public class Robot extends IterativeRobot {
     String autoSelected;
     SendableChooser chooser;
 	
+    
+    /**Motor constants**/
+	private static final int MotorDriveRL = 3;//Rear Left
+	private static final int MotorDriveFL = 2; //Front Left
+	private static final int MotorDriveRR = 1; //Rear Right
+	private static final int MotorDriveFR = 0; //Front Right
+	/**Initialize Victors**/
+	Victor rearLeftMotor = new Victor(MotorDriveRL);
+	Victor frontLeftMotor = new Victor(MotorDriveFL);
+	    
+	Victor rearRightMotor = new Victor(MotorDriveRR);
+	Victor frontRightMotor = new Victor(MotorDriveFR); 
+	/**Joysticks**/    
+	Joystick leftStick = new Joystick(0);
+	Joystick rightStick = new Joystick(1);
+	Joystick operatorStick = new Joystick(2);
+	
+	public RobotDrive drive = new RobotDrive(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
+	
+	/** Joystick Constants **/ //Magic Numbers found in Joystick.class
+    private static final int axisY = 1;
+    
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
@@ -64,7 +89,9 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
-        
+    	double left = leftStick.getRawAxis(axisY);
+		double right = rightStick.getRawAxis(axisY);
+		drive.tankDrive(left, right);
     }
     
     /**
