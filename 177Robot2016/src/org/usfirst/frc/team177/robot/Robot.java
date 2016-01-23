@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -16,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
+@SuppressWarnings("unused")
 public class Robot extends IterativeRobot {
     final String defaultAuto = "Default";
     final String customAuto = "My Auto";
@@ -24,16 +27,24 @@ public class Robot extends IterativeRobot {
 	
     
     /**Motor constants**/
-	private static final int MotorDriveRL = 3;//Rear Left
-	private static final int MotorDriveFL = 2; //Front Left
-	private static final int MotorDriveRR = 1; //Rear Right
-	private static final int MotorDriveFR = 0; //Front Right
+	private static final int MotorDriveRL = 3;//Rear Left 888
+	private static final int MotorDriveFL = 2; //Front Left 888
+	private static final int MotorDriveRR = 1; //Rear Right 888
+	private static final int MotorDriveFR = 0; //Front Right 888
+	
+	private static final int MotorRollerTop = 4; //Top Roller 888
+	private static final int MotorRollerSide = 5; //Side Roller 888
+	
 	/**Initialize Victors**/
 	Victor rearLeftMotor = new Victor(MotorDriveRL);
 	Victor frontLeftMotor = new Victor(MotorDriveFL);
 	    
 	Victor rearRightMotor = new Victor(MotorDriveRR);
 	Victor frontRightMotor = new Victor(MotorDriveFR); 
+	
+	Victor rollerTopMotor = new Victor(MotorRollerTop);
+	Victor rollerSideMotor = new Victor(MotorRollerSide);
+	
 	/**Joysticks**/    
 	Joystick leftStick = new Joystick(0);
 	Joystick rightStick = new Joystick(1);
@@ -43,6 +54,9 @@ public class Robot extends IterativeRobot {
 	
 	/** Joystick Constants **/ //Magic Numbers found in Joystick.class
     private static final int axisY = 1;
+     
+    /** Digital Input **/
+    DigitalInput ballIRSwitch = new DigitalInput(0);
     
     /**
      * This function is run when the robot is first started up and should be
@@ -64,6 +78,7 @@ public class Robot extends IterativeRobot {
 	 * You can add additional auto modes by adding additional comparisons to the switch structure below with additional strings.
 	 * If using the SendableChooser make sure to add them to the chooser code above as well.
 	 */
+    
     public void autonomousInit() {
     	autoSelected = (String) chooser.getSelected();
 //		autoSelected = SmartDashboard.getString("Auto Selector", defaultAuto);
@@ -92,6 +107,13 @@ public class Robot extends IterativeRobot {
     	double left = leftStick.getRawAxis(axisY);
 		double right = rightStick.getRawAxis(axisY);
 		drive.tankDrive(left, right);
+		if (!ballIRSwitch.get()) {
+			rollerTopMotor.set(operatorStick.getRawAxis(3));
+			rollerSideMotor.set(operatorStick.getRawAxis(3) / 2);
+		} else {
+			rollerTopMotor.set(0);
+			rollerSideMotor.set(0);
+		}
     }
     
     /**
