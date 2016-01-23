@@ -49,6 +49,7 @@ public class Robot extends IterativeRobot {
 	Joystick leftStick = new Joystick(0);
 	Joystick rightStick = new Joystick(1);
 	Joystick operatorStick = new Joystick(2);
+	Joystick switchPanel = new Joystick(3);
 	
 	public RobotDrive drive = new RobotDrive(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
 	
@@ -107,9 +108,9 @@ public class Robot extends IterativeRobot {
     	double left = leftStick.getRawAxis(axisY);
 		double right = rightStick.getRawAxis(axisY);
 		drive.tankDrive(left, right);
-		if (!ballIRSwitch.get()) {
+		if (!ballIRSwitch.get() || switchPanel.getRawButton(4)) {  //allows driver control as long as the IR switch is not triggered or if the missile switch is triggered.
 			rollerTopMotor.set(operatorStick.getRawAxis(3));
-			rollerSideMotor.set(operatorStick.getRawAxis(3) / 2);
+			rollerSideMotor.set(operatorStick.getRawAxis(3) / 2);  //Scaling for the side motors
 		} else {
 			rollerTopMotor.set(0);
 			rollerSideMotor.set(0);
