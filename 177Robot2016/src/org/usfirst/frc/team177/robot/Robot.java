@@ -4,6 +4,7 @@ package org.usfirst.frc.team177.robot;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -55,6 +56,9 @@ public class Robot extends IterativeRobot {
 	
 	/** Joystick Constants **/ //Magic Numbers found in Joystick.class
     private static final int axisY = 1;
+    
+    /** Solenoids **/
+	public Solenoid uselessPneumatic = new Solenoid(0);
      
     /** Digital Input **/
     DigitalInput ballIRSwitch = new DigitalInput(0);
@@ -114,6 +118,11 @@ public class Robot extends IterativeRobot {
 		} else {
 			rollerTopMotor.set(0);
 			rollerSideMotor.set(0);
+		}
+		if (ballIRSwitch.get()) {
+			uselessPneumatic.set(true);
+		} else {
+			uselessPneumatic.set(false);
 		}
     }
     
