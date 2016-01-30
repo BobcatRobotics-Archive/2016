@@ -105,6 +105,7 @@ public class Robot extends IterativeRobot {
         chooser.addDefault("Default Auto", defaultAuto);
         chooser.addObject("My Auto", customAuto);
         SmartDashboard.putData("Auto choices", chooser);
+        transferPneumatic.set(true);
     }
     
 	/**
@@ -139,6 +140,7 @@ public class Robot extends IterativeRobot {
     }
     public void teleopInit() {
     	catapultStates catapultState = catapultStates.Pickup;
+    	pickupStates pickupState = pickupStates.BallAcquired;
     }
     /**
      * This function is called periodically during operator control
@@ -147,18 +149,16 @@ public class Robot extends IterativeRobot {
     	double left = leftStick.getRawAxis(axisY);
 		double right = rightStick.getRawAxis(axisY);
 		drive.tankDrive(left, right);
-		if (!ballIRSwitch.get() || switchPanel.getRawButton(4)) {  //allows driver control as long as the IR switch is not triggered or if the missile switch is triggered.
+		if (ballIRSwitch.get()) {  //allows driver control as long as the IR switch is not triggered.
 			rollerTopMotor.set(operatorStick.getRawAxis(3));
 			rollerSideMotor.set(operatorStick.getRawAxis(3) / 2);  //Scaling for the side motors
-		} else {
-			rollerTopMotor.set(0);
-			rollerSideMotor.set(0);
 		}
-		if (ballIRSwitch.get()) {
-			uselessPneumatic.set(true);
-		} else {
-			uselessPneumatic.set(false);
-		}
+		if (ballIRSwitch.get()) { //TESTING ONLY
+			uselessPneumatic.set(true); //TESTING ONLY
+		} else { //TESTING ONLY
+			uselessPneumatic.set(false); //TESTING ONLY
+		} //TESTING ONLY
+		
 		//Firing State Machine
 		switch (catapultState)
 		{
@@ -210,29 +210,42 @@ public class Robot extends IterativeRobot {
 	    }
 
 		//Pickup State Machine
-/**		switch(pickupState)
+		switch(pickupState)
 		{
 		case BallAcquired:
 			if(operatorStick.getRawButton(2)) {
-				
+				pickupState = pickupStates.TransferUp;
 			}
 			break;
 		case TransferUp:
+			transferPneumatic.set(false); //out
+			pickupState = pickupStates.DropBall;
 			break;
 		case DropBall:
+			rollerTopMotor.set(operatorStick.getRawAxis(3));
+			rollerSideMotor.set(operatorStick.getRawAxis(3) / 2);  //Scaling for the side motors
+			if(operatorStick.getRawButton(2)) {
+				pickupState = pickupStates.TransferDown;
+			}
 			break;
 		case TransferDown:
+			transferPneumatic.set(true); //in
+			pickupState = pickupStates.BallAcquired;
 			break;
 		default:
 			break;
 		}
-**/
+
 		//MISSILE SWITCH OVERRIDE
 		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
 			catapultState = catapultStates.NoBall;
 		}
-		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(2)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
+		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(2)) { //This is done so that if the missile switch is fired the driver can transfer.  Even if it is a terrible,terrible idea
 			transferPneumatic.set(!transferPneumatic.get());
+		}
+		if(switchPanel.getRawButton(4)) {  //allows driver control as long as the IR switch is not triggered or if the missile switch is triggered.
+			rollerTopMotor.set(operatorStick.getRawAxis(3));
+			rollerSideMotor.set(operatorStick.getRawAxis(3) / 2); //Scaling for the side motors
 		}
     }
     
