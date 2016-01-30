@@ -62,6 +62,7 @@ public class Robot extends IterativeRobot {
 	//SAFETY: At the end of the match both the latch and the pusher should be out
 	public Solenoid latchPneumatic = new Solenoid(1); //false = out
 	public Solenoid pusherPneumatic = new Solenoid(2); //false = out
+	public Solenoid transferPneumatic = new Solenoid(3); //false = out
 	
     /** Digital Input **/
     DigitalInput ballIRSwitch = new DigitalInput(0);
@@ -77,14 +78,23 @@ public class Robot extends IterativeRobot {
     	PreparingToFire,
     	ReadyToFire
     };
-    //State Machine
+    enum pickupStates {
+    	BallAcquired,
+    	TransferUp,
+    	DropBall,
+    	TransferDown
+    };
+    
+    //State Machine Shooter
     catapultStates catapultState = catapultStates.NoBall;
     double afterFiringDelay = 3000; //ms
     double latchOutDelay = 3000; //ms
     double pusherInDelay = 3000; //ms
     long lastEventTime = 0;
     
-    boolean readyToFire;
+    //State Machine Pickup
+    pickupStates pickupState = pickupStates.BallAcquired;
+    
     
     /**
      * This function is run when the robot is first started up and should be
@@ -153,8 +163,15 @@ public class Robot extends IterativeRobot {
 		switch (catapultState)
 		{
 		case NoBall:
+			if(lastEventTime == 0) { 
+				lastEventTime = System.currentTimeMillis();
+			}
 			latchPneumatic.set(true); //in
 			pusherPneumatic.set(true); //in
+			if(System.currentTimeMillis() - lastEventTime > latchOutDelay) {
+				catapultState = catapultStates.Pickup;
+				lastEventTime = 0;
+			}
 			break;
 		case Pickup:
 			latchPneumatic.set(true); //in
@@ -191,8 +208,31 @@ public class Robot extends IterativeRobot {
 		default:
 			break;
 	    }
+
+		//Pickup State Machine
+/**		switch(pickupState)
+		{
+		case BallAcquired:
+			if(operatorStick.getRawButton(2)) {
+				
+			}
+			break;
+		case TransferUp:
+			break;
+		case DropBall:
+			break;
+		case TransferDown:
+			break;
+		default:
+			break;
+		}
+**/
+		//MISSILE SWITCH OVERRIDE
 		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
-			catapultState= catapultStates.NoBall;
+			catapultState = catapultStates.NoBall;
+		}
+		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(2)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
+			transferPneumatic.set(!transferPneumatic.get());
 		}
     }
     
