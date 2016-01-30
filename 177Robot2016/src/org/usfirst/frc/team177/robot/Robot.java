@@ -59,9 +59,32 @@ public class Robot extends IterativeRobot {
     
     /** Solenoids **/
 	public Solenoid uselessPneumatic = new Solenoid(0);
-     
+	//SAFETY: At the end of the match both the latch and the pusher should be out
+	public Solenoid latchPneumatic = new Solenoid(1); //false = out
+	public Solenoid pusherPneumatic = new Solenoid(2); //false = out
+	
     /** Digital Input **/
     DigitalInput ballIRSwitch = new DigitalInput(0);
+    //Pin 1 is power for the IR switch
+    DigitalInput readyToFireLimitSwitchA = new DigitalInput(2);
+    DigitalInput readyToFireLimitSwitchB = new DigitalInput(3);
+    
+    /**Enums**/
+    enum catapultStates {
+    	NoBall,
+    	Pickup,
+    	BallsIn,
+    	PreparingToFire,
+    	ReadyToFire
+    };
+    //State Machine
+    catapultStates catapultState = catapultStates.NoBall;
+    double afterFiringDelay = 3000; //ms
+    double latchOutDelay = 3000; //ms
+    double pusherInDelay = 3000; //ms
+    long lastEventTime = 0;
+    
+    boolean readyToFire;
     
     /**
      * This function is run when the robot is first started up and should be
@@ -104,7 +127,9 @@ public class Robot extends IterativeRobot {
             break;
     	}
     }
-
+    public void teleopInit() {
+    	catapultStates catapultState = catapultStates.Pickup;
+    }
     /**
      * This function is called periodically during operator control
      */
@@ -123,6 +148,51 @@ public class Robot extends IterativeRobot {
 			uselessPneumatic.set(true);
 		} else {
 			uselessPneumatic.set(false);
+		}
+		//Firing State Machine
+		switch (catapultState)
+		{
+		case NoBall:
+			latchPneumatic.set(true); //in
+			pusherPneumatic.set(true); //in
+			break;
+		case Pickup:
+			latchPneumatic.set(true); //in
+			pusherPneumatic.set(false); //out
+			if(readyToFireLimitSwitchA.get() || readyToFireLimitSwitchB.get()){
+				catapultState = catapultStates.BallsIn;
+			}
+			break;
+		case BallsIn:
+			if(lastEventTime == 0) { 
+				lastEventTime = System.currentTimeMillis();
+			}
+			latchPneumatic.set(false); //out
+			pusherPneumatic.set(false); //out
+			if(System.currentTimeMillis() - lastEventTime > latchOutDelay) {
+				catapultState = catapultStates.PreparingToFire;
+				lastEventTime = 0;
+			}
+			break;
+		case PreparingToFire:
+			if(lastEventTime == 0) { 
+				lastEventTime = System.currentTimeMillis();
+			}
+			latchPneumatic.set(false); //out
+			pusherPneumatic.set(true); //in
+			if(System.currentTimeMillis() - lastEventTime > latchOutDelay) {
+				catapultState = catapultStates.ReadyToFire;
+				lastEventTime = 0;
+			}
+			break;
+		case ReadyToFire:
+			catapultState = catapultStates.NoBall;
+			break;
+		default:
+			break;
+	    }
+		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
+			catapultState= catapultStates.NoBall;
 		}
     }
     
