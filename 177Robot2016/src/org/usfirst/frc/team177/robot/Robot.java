@@ -63,12 +63,15 @@ public class Robot extends IterativeRobot {
 	public Solenoid latchPneumatic = new Solenoid(1); //false = out
 	public Solenoid pusherPneumatic = new Solenoid(2); //false = out
 	public Solenoid transferPneumatic = new Solenoid(3); //false = out
+	public Solenoid shiftPneumatic = new Solenoid(4);
 	
     /** Digital Input **/
     DigitalInput ballIRSwitch = new DigitalInput(0);
     //Pin 1 is power for the IR switch
     DigitalInput readyToFireLimitSwitchA = new DigitalInput(2);
     DigitalInput readyToFireLimitSwitchB = new DigitalInput(3);
+    DigitalInput leftDriveEncoder = new DigitalInput(4);
+    DigitalInput rightDriveEncoder = new DigitalInput(5);                       
     
     /**Enums**/
     enum catapultStates {
@@ -148,17 +151,19 @@ public class Robot extends IterativeRobot {
     public void teleopPeriodic() {
     	double left = leftStick.getRawAxis(axisY);
 		double right = rightStick.getRawAxis(axisY);
+		shiftPneumatic.set(rightStick.getRawButton(3));
 		drive.tankDrive(left, right);
 		if (ballIRSwitch.get()) {  //allows driver control as long as the IR switch is not triggered.
 			rollerTopMotor.set(operatorStick.getRawAxis(3));
 			rollerSideMotor.set(operatorStick.getRawAxis(3) / 2);  //Scaling for the side motors
 		}
-		if (ballIRSwitch.get()) { //TESTING ONLY
+		uselessPneumatic.set(operatorStick.getRawButton(1));
+		/**if (ballIRSwitch.get()) { //TESTING ONLY
 			uselessPneumatic.set(true); //TESTING ONLY
 		} else { //TESTING ONLY
 			uselessPneumatic.set(false); //TESTING ONLY
 		} //TESTING ONLY
-		
+		**/
 		//Firing State Machine
 		switch (catapultState)
 		{
