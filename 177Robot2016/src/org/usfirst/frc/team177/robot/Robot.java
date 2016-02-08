@@ -58,12 +58,12 @@ public class Robot extends IterativeRobot {
     private static final int axisY = 1;
     
     /** Solenoids **/
-	public Solenoid uselessPneumatic = new Solenoid(0);
+	public Solenoid uselessPneumatic = new Solenoid(4);
 	//SAFETY: At the end of the match both the latch and the pusher should be out
 	public Solenoid latchPneumatic = new Solenoid(1); //false = out
 	public Solenoid pusherPneumatic = new Solenoid(2); //false = out
 	public Solenoid transferPneumatic = new Solenoid(3); //false = out
-	public Solenoid shiftPneumatic = new Solenoid(4);
+	public Solenoid shiftPneumatic = new Solenoid(0);
 	
     /** Digital Input **/
     DigitalInput ballIRSwitch = new DigitalInput(0);
@@ -71,7 +71,9 @@ public class Robot extends IterativeRobot {
     DigitalInput readyToFireLimitSwitchA = new DigitalInput(2);
     DigitalInput readyToFireLimitSwitchB = new DigitalInput(3);
     DigitalInput leftDriveEncoder = new DigitalInput(4);
-    DigitalInput rightDriveEncoder = new DigitalInput(5);                       
+    //Pin 5 is power for the leftDriveEncoder
+    DigitalInput rightDriveEncoder = new DigitalInput(6);
+    //Pin 7 is power for the rightDriveEncoder
     
     /**Enums**/
     enum catapultStates {
