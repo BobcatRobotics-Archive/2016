@@ -66,8 +66,7 @@ public class Robot extends IterativeRobot {
 	public Solenoid shiftPneumatic = new Solenoid(0);
 	
     /** Digital Input **/
-    DigitalInput ballIRSwitch = new DigitalInput(0);
-    //Pin 1 is power for the IR switch
+    //DigitalInput ballIRSwitch = new DigitalInput(); //RIP IR, died 2/11/16 at the hands of Ulf's SuperAwesome piece of Lexan
     DigitalInput readyToFireLimitSwitchA = new DigitalInput(2);
     DigitalInput readyToFireLimitSwitchB = new DigitalInput(3);
     DigitalInput leftDriveEncoder = new DigitalInput(4);
