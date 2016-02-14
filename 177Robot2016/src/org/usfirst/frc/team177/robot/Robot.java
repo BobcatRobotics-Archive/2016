@@ -5,11 +5,9 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 /**
@@ -19,7 +17,6 @@ import edu.wpi.first.wpilibj.DigitalInput;
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
-@SuppressWarnings("unused")
 public class Robot extends IterativeRobot {
     final String defaultAuto = "Default";
     final String customAuto = "My Auto";
@@ -36,6 +33,7 @@ public class Robot extends IterativeRobot {
 	private static final int MotorRollerTop = 4; //Top Roller 888
 	private static final int MotorRollerSide = 5; //Side Roller 888
 	
+	private static final int MotorClimb = 6; //Climb Motor 888
 	/**Initialize Victors**/
 	Victor rearLeftMotor = new Victor(MotorDriveRL);
 	Victor frontLeftMotor = new Victor(MotorDriveFL);
@@ -45,6 +43,8 @@ public class Robot extends IterativeRobot {
 	
 	Victor rollerTopMotor = new Victor(MotorRollerTop);
 	Victor rollerSideMotor = new Victor(MotorRollerSide);
+	
+	Victor climbMotor = new Victor(MotorClimb);
 	
 	/**Joysticks**/    
 	Joystick leftStick = new Joystick(0);
@@ -61,7 +61,7 @@ public class Robot extends IterativeRobot {
 	//SAFETY: At the end of the match both the latch and the pusher should be out
 	public Solenoid latchPneumatic = new Solenoid(1); //false = out
 	public Solenoid pusherPneumatic = new Solenoid(2); //false = out
-	public Solenoid transferPneumatic = new Solenoid(3); //false = out
+	public Solenoid transferPneumatic = new Solenoid(4); //false = out
 	public Solenoid shiftPneumatic = new Solenoid(0);
 	
     /** Digital Input **/
@@ -97,6 +97,14 @@ public class Robot extends IterativeRobot {
     
     //State Machine Pickup
     pickupStates pickupState = pickupStates.BallAcquired;
+    
+    //Controller Mapping
+    //Controller
+    int ButtonTransfer = 8;
+    int ButtonSideRollers = 7;
+    //Right Joystick
+    int ButtonShift = 3;
+    //Left Joystick
     
     
     /**
@@ -149,14 +157,23 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
+    	//Driving
     	double left = leftStick.getRawAxis(axisY);
 		double right = rightStick.getRawAxis(axisY);
-		shiftPneumatic.set(rightStick.getRawButton(3));
 		drive.tankDrive(left, right);
-		rollerTopMotor.set(operatorStick.getRawAxis(3));
-		rollerSideMotor.set(operatorStick.getRawAxis(3) / 2);  //Scaling for the side motors
+		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));
+		
+    	transferPneumatic.set(operatorStick.getRawButton(ButtonSideRollers));
+		if(operatorStick.getRawButton(ButtonTransfer)) {
+			rollerSideMotor.set(1);
+		}
+		else {
+			rollerSideMotor.set(0);
+		}
+		rollerTopMotor.set(operatorStick.getRawAxis(1) * -1); //Left Stick, y axis
+		
 		//Firing State Machine
-		switch (catapultState)
+		/**switch (catapultState)
 		{
 		case NoBall:
 			if(lastEventTime == 0) { 
@@ -199,7 +216,9 @@ public class Robot extends IterativeRobot {
 			}
 			break;
 		case ReadyToFire:
-			catapultState = catapultStates.NoBall;
+			if(operatorStick.getRawButton(1); {
+				catapultState = catapultStates.NoBall;
+			}
 			break;
 		default:
 			break;
@@ -233,16 +252,10 @@ public class Robot extends IterativeRobot {
 		}
 
 		//MISSILE SWITCH OVERRIDE
+		**/
 		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
 			catapultState = catapultStates.NoBall;
-		}
-		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(2)) { //This is done so that if the missile switch is fired the driver can transfer.  Even if it is a terrible,terrible idea
-			transferPneumatic.set(!transferPneumatic.get());
-		}
-		if(switchPanel.getRawButton(4)) {  //allows driver control as long as the IR switch is not triggered or if the missile switch is triggered.
-			rollerTopMotor.set(operatorStick.getRawAxis(3));
-			rollerSideMotor.set(operatorStick.getRawAxis(3) / 2); //Scaling for the side motors
-		}
+		}		
     }
     
     /**
