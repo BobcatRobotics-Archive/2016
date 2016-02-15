@@ -100,10 +100,10 @@ public class Robot extends IterativeRobot {
     
     //Controller Mapping
     //Controller
-    int ButtonTransfer = 8;
-    int ButtonSideRollers = 7;
+    private static final int ButtonTransfer = 8;
+    private static final int ButtonSideRollers = 7;
     //Right Joystick
-    int ButtonShift = 3;
+    private static final int ButtonShift = 3;
     //Left Joystick
     
     
