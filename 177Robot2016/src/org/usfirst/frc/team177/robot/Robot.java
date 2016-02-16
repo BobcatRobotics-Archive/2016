@@ -18,8 +18,8 @@ import edu.wpi.first.wpilibj.DigitalInput;
  * directory.
  */
 public class Robot extends IterativeRobot {
-    final String defaultAuto = "Default";
-    final String customAuto = "My Auto";
+    final String doNothing = "Default";
+    final String driveForward = "My Auto";
     String autoSelected;
     SendableChooser chooser;
 	
@@ -113,8 +113,8 @@ public class Robot extends IterativeRobot {
      */
     public void robotInit() {
         chooser = new SendableChooser();
-        chooser.addDefault("Default Auto", defaultAuto);
-        chooser.addObject("My Auto", customAuto);
+        chooser.addDefault("Do Nothing", doNothing);
+        chooser.addObject("Drive Forward", driveForward);
         SmartDashboard.putData("Auto choices", chooser);
         transferPneumatic.set(true);
     }
@@ -131,7 +131,7 @@ public class Robot extends IterativeRobot {
     
     public void autonomousInit() {
     	autoSelected = (String) chooser.getSelected();
-//		autoSelected = SmartDashboard.getString("Auto Selector", defaultAuto);
+		autoSelected = SmartDashboard.getString("Auto Selector", doNothing);
 		System.out.println("Auto selected: " + autoSelected);
     }
 
@@ -140,12 +140,13 @@ public class Robot extends IterativeRobot {
      */
     public void autonomousPeriodic() {
     	switch(autoSelected) {
-    	case customAuto:
+    	case driveForward:
         //Put custom auto code here   
             break;
-    	case defaultAuto:
+    	case doNothing:
     	default:
     	//Put default auto code here
+    		//Do Nothing
             break;
     	}
     }
