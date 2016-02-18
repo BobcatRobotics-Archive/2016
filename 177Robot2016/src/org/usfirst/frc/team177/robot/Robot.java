@@ -61,7 +61,7 @@ public class Robot extends IterativeRobot {
 	//SAFETY: At the end of the match both the latch and the pusher should be out
 	public Solenoid latchPneumatic = new Solenoid(1); //false = out
 	public Solenoid pusherPneumatic = new Solenoid(2); //false = out
-	public Solenoid transferPneumatic = new Solenoid(4); //false = out
+	public Solenoid transferPneumatic = new Solenoid(3); //false = out
 	public Solenoid shiftPneumatic = new Solenoid(0);
 	
     /** Digital Input **/
@@ -90,13 +90,17 @@ public class Robot extends IterativeRobot {
     
     //State Machine Shooter
     catapultStates catapultState = catapultStates.NoBall;
-    double afterFiringDelay = 3000; //ms
-    double latchOutDelay = 3000; //ms
-    double pusherInDelay = 3000; //ms
-    long lastEventTime = 0;
+    double afterFiringDelay = 1000; //ms
+    double latchOutDelay = 1000; //ms
+    double pusherInDelay = 1000; //ms
+    long lastShooterEventTime = 0;
     
     //State Machine Pickup
     pickupStates pickupState = pickupStates.BallAcquired;
+    
+    //State Machine Auto
+    long lastDriveForwardEventTime = 0;
+    double driveForwardDelay = 3000;
     
     //Controller Mapping
     //Controller
@@ -141,17 +145,24 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() {
     	switch(autoSelected) {
     	case driveForward:
-        //Put custom auto code here   
+    		if(lastDriveForwardEventTime == 0) { 
+    			lastDriveForwardEventTime = System.currentTimeMillis();
+    		}
+    		drive.tankDrive(.75,.75);
+    		if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
+    			drive.tankDrive(0,0);
+    			lastDriveForwardEventTime = 0;
+    		}
             break;
     	case doNothing:
     	default:
-    	//Put default auto code here
     		//Do Nothing
             break;
     	}
     }
-    public void teleopInit() {
-    	catapultStates catapultState = catapultStates.Pickup;
+    @SuppressWarnings("unused")
+	public void teleopInit() {
+    	catapultStates catapultState = catapultStates.BallsIn;
     	pickupStates pickupState = pickupStates.BallAcquired;
     }
     /**
@@ -172,59 +183,71 @@ public class Robot extends IterativeRobot {
 			rollerSideMotor.set(0);
 		}
 		rollerTopMotor.set(operatorStick.getRawAxis(1) * -1); //Left Stick, y axis
-		
-		//Firing State Machine
-		/**switch (catapultState)
+	
+		if(switchPanel.getRawButton(1))
 		{
-		case NoBall:
-			if(lastEventTime == 0) { 
-				lastEventTime = System.currentTimeMillis();
+			latchPneumatic.set(switchPanel.getRawButton(2));
+			pusherPneumatic.set(switchPanel.getRawButton(3));
+			catapultState = catapultStates.BallsIn;
+		}
+		else
+		{
+			//Firing State Machine
+			switch (catapultState)
+			{
+			case NoBall:  //fire
+				if(lastShooterEventTime == 0) { 
+					lastShooterEventTime = System.currentTimeMillis();
+				}
+				latchPneumatic.set(true); //unlatched
+				pusherPneumatic.set(true); //in
+				if(System.currentTimeMillis() - lastShooterEventTime > latchOutDelay) {
+					catapultState = catapultStates.Pickup;
+					lastShooterEventTime = 0;
+				}
+				break;
+			case Pickup:
+				latchPneumatic.set(true);  //unlatched 
+				pusherPneumatic.set(false); //out
+				
+				/**if(readyToFireLimitSwitchA.get() || readyToFireLimitSwitchB.get()){
+					catapultState = catapultStates.BallsIn;
+				}**/
+				if(operatorStick.getRawButton(4)) {
+					catapultState = catapultStates.BallsIn;
+				}
+				break;
+			case BallsIn:
+				if(lastShooterEventTime == 0) { 
+					lastShooterEventTime = System.currentTimeMillis();
+				}
+				latchPneumatic.set(false); //latch
+				pusherPneumatic.set(false); //out
+				if(System.currentTimeMillis() - lastShooterEventTime > latchOutDelay) {
+					catapultState = catapultStates.PreparingToFire;
+					lastShooterEventTime = 0;
+				}
+				break;
+			case PreparingToFire:
+				if(lastShooterEventTime == 0) { 
+					lastShooterEventTime = System.currentTimeMillis();
+				}
+				latchPneumatic.set(false); //lastched
+				pusherPneumatic.set(true); //in
+				if(System.currentTimeMillis() - lastShooterEventTime > latchOutDelay) {
+					catapultState = catapultStates.ReadyToFire;
+					lastShooterEventTime = 0;
+				}
+				break;
+			case ReadyToFire:
+				if(operatorStick.getRawButton(1)) {
+					catapultState = catapultStates.NoBall;
+				}
+				break;
+			default:
+				break;
 			}
-			latchPneumatic.set(true); //in
-			pusherPneumatic.set(true); //in
-			if(System.currentTimeMillis() - lastEventTime > latchOutDelay) {
-				catapultState = catapultStates.Pickup;
-				lastEventTime = 0;
-			}
-			break;
-		case Pickup:
-			latchPneumatic.set(true); //in
-			pusherPneumatic.set(false); //out
-			if(readyToFireLimitSwitchA.get() || readyToFireLimitSwitchB.get()){
-				catapultState = catapultStates.BallsIn;
-			}
-			break;
-		case BallsIn:
-			if(lastEventTime == 0) { 
-				lastEventTime = System.currentTimeMillis();
-			}
-			latchPneumatic.set(false); //out
-			pusherPneumatic.set(false); //out
-			if(System.currentTimeMillis() - lastEventTime > latchOutDelay) {
-				catapultState = catapultStates.PreparingToFire;
-				lastEventTime = 0;
-			}
-			break;
-		case PreparingToFire:
-			if(lastEventTime == 0) { 
-				lastEventTime = System.currentTimeMillis();
-			}
-			latchPneumatic.set(false); //out
-			pusherPneumatic.set(true); //in
-			if(System.currentTimeMillis() - lastEventTime > latchOutDelay) {
-				catapultState = catapultStates.ReadyToFire;
-				lastEventTime = 0;
-			}
-			break;
-		case ReadyToFire:
-			if(operatorStick.getRawButton(1); {
-				catapultState = catapultStates.NoBall;
-			}
-			break;
-		default:
-			break;
-	    }
-
+		}
 		//Pickup State Machine
 		switch(pickupState)
 		{
@@ -253,7 +276,6 @@ public class Robot extends IterativeRobot {
 		}
 
 		//MISSILE SWITCH OVERRIDE
-		**/
 		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
 			catapultState = catapultStates.NoBall;
 		}		
