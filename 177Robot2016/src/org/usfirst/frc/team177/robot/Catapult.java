@@ -1,13 +1,14 @@
 package org.usfirst.frc.team177.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
 
 public class Catapult {
 
 	
 	private Solenoid latchPneumatic; 
-	private Solenoid pusherPneumatic;
+	private DoubleSolenoid pusherPneumatic;
 	private DigitalInput catapultRetractedLimitSwich;
 	
 	/**Enums**/
@@ -29,10 +30,10 @@ public class Catapult {
     private static final boolean LATCHED = false;
     private static final boolean UNLATCHED = true;
     //pusher states
-    private static final boolean EXTENDED = false;
-    private static final boolean RETRACTED = true;
+    private static final DoubleSolenoid.Value EXTENDED = DoubleSolenoid.Value.kForward;
+    private static final DoubleSolenoid.Value RETRACTED = DoubleSolenoid.Value.kReverse;
     	
-    Catapult(Solenoid latchPneumatic, Solenoid pusherPneumatic, DigitalInput catapultRetractedLimitSwich)
+    Catapult(Solenoid latchPneumatic, DoubleSolenoid pusherPneumatic, DigitalInput catapultRetractedLimitSwich)
     {
     	this.latchPneumatic = latchPneumatic;
     	this.pusherPneumatic = pusherPneumatic;

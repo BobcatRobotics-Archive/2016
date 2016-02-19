@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -65,7 +66,7 @@ public class Robot extends IterativeRobot {
     /** Solenoids **/
 	//SAFETY: At the end of the match both the latch and the pusher should be out
 	public Solenoid latchPneumatic = new Solenoid(1); //false = out
-	public Solenoid pusherPneumatic = new Solenoid(2); //false = out
+	public DoubleSolenoid pusherPneumatic = new DoubleSolenoid(4,5); //false = out
 	public Solenoid transferPneumatic = new Solenoid(3); //false = out
 	public Solenoid shiftPneumatic = new Solenoid(0);
 	
@@ -79,7 +80,7 @@ public class Robot extends IterativeRobot {
     private static final int rightDriveEncoderB = 7;
     
     /** Analog Inputs **/
-    private static final int GyroAnalogInput = 1;   
+    private static final int GyroAnalogInput = 0;   
     
     
     enum pickupStates {
@@ -223,7 +224,7 @@ public class Robot extends IterativeRobot {
 		if(switchPanel.getRawButton(1))
 		{
 			latchPneumatic.set(switchPanel.getRawButton(2));
-			pusherPneumatic.set(switchPanel.getRawButton(3));
+			pusherPneumatic.set(switchPanel.getRawButton(3)?DoubleSolenoid.Value.kForward:DoubleSolenoid.Value.kReverse);
 			catapult.setState(catapultStates.BallsIn);			
 		}
 		else
