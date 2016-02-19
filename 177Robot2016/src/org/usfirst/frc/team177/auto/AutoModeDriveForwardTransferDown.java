@@ -49,7 +49,7 @@ public class AutoModeDriveForwardTransferDown extends AutoMode {
     }
     	
     public String getName() {
-        return "DriveForward";
+        return "DriveForwardTransferDown";
     }
 
 	@Override
