@@ -5,7 +5,7 @@ package org.usfirst.frc.team177.auto;
 
 import org.usfirst.frc.team177.robot.*;
 
-public class AutoModeDriveForward extends AutoMode {
+public class AutoModeDriveForwardTransferDown extends AutoMode {
     
 	enum AutoStates {
 		DriveForward,
@@ -17,7 +17,7 @@ public class AutoModeDriveForward extends AutoMode {
     long lastDriveForwardEventTime = 0;
     double driveForwardDelay = 3000;
 
-    public AutoModeDriveForward(Robot robot) {
+    public AutoModeDriveForwardTransferDown(Robot robot) {
         super(robot);
         System.out.println("AutoModeDriveForward Constructor");
     }    
@@ -33,6 +33,7 @@ public class AutoModeDriveForward extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
+    			robot.transferPneumatic.set(true);
     			robot.drive.tankDrive(0.75,0.75);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
     				robot.drive.tankDrive(0,0);

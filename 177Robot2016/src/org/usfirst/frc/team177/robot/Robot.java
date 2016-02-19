@@ -25,8 +25,9 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
  * directory.
  */
 public class Robot extends IterativeRobot {
-    final String doNothing = "Default";
-    final String driveForward = "My Auto";
+    final String doNothing = "Do Nothing";
+    final String driveForwardTransferDown = "Drive Forward Transfer Down";
+    final String driveForwardTransferUp = "Drive Forward Transfer Up";
     String autoSelected;
     SendableChooser chooser;
 	    
@@ -124,7 +125,8 @@ public class Robot extends IterativeRobot {
     public void robotInit() {
         chooser = new SendableChooser();
         chooser.addDefault("Do Nothing", doNothing);
-        chooser.addObject("Drive Forward", driveForward);
+        chooser.addObject("Drive Forward(LowBar)", driveForwardTransferDown);
+        chooser.addObject("Drive Forward(Obstacle)", driveForwardTransferUp);
         SmartDashboard.putData("Auto choices", chooser);
         transferPneumatic.set(true);
         
@@ -162,7 +164,7 @@ public class Robot extends IterativeRobot {
         }    	
     	
     	switch(autoSelected) {
-    	case driveForward:
+    	case driveForwardTransferDown:
     	
             break;
     	case doNothing:
@@ -180,8 +182,11 @@ public class Robot extends IterativeRobot {
 		if(autoSelected != autoMode)
 		{
 			switch(autoSelected) {
-	    		case driveForward:
-	    			auto = new AutoModeDriveForward(this);
+	    		case driveForwardTransferDown:
+	    			auto = new AutoModeDriveForwardTransferDown(this);
+	    			break;
+	    		case driveForwardTransferUp:
+	    			auto = new AutoModeDriveForwardTransferUp(this);
 	    			break;
 	    		case doNothing:
 	        	default:
@@ -236,7 +241,7 @@ public class Robot extends IterativeRobot {
 		
 		
 		//Pickup State Machine
-		switch(pickupState)
+		/**switch(pickupState)
 		{
 		case BallAcquired:
 			if(operatorStick.getRawButton(2)) {
@@ -260,7 +265,7 @@ public class Robot extends IterativeRobot {
 			break;
 		default:
 			break;
-		}
+		}**/
 
 		//MISSILE SWITCH OVERRIDE
 		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
