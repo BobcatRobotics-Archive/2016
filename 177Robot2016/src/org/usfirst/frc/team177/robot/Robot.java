@@ -212,6 +212,8 @@ public class Robot extends IterativeRobot {
 		drive.tankDrive(left, right);
 		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));
 		
+		SmartDashboard.putString("test", "yay");
+		
     	transferPneumatic.set(operatorStick.getRawButton(ButtonSideRollers));
 		if(operatorStick.getRawButton(ButtonTransfer)) {
 			rollerSideMotor.set(1);

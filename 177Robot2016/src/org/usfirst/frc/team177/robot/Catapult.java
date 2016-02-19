@@ -30,8 +30,8 @@ public class Catapult {
     private static final boolean LATCHED = false;
     private static final boolean UNLATCHED = true;
     //pusher states
-    private static final DoubleSolenoid.Value EXTENDED = DoubleSolenoid.Value.kForward;
-    private static final DoubleSolenoid.Value RETRACTED = DoubleSolenoid.Value.kReverse;
+    private static final DoubleSolenoid.Value EXTENDED = DoubleSolenoid.Value.kReverse;
+    private static final DoubleSolenoid.Value RETRACTED = DoubleSolenoid.Value.kForward;
     	
     Catapult(Solenoid latchPneumatic, DoubleSolenoid pusherPneumatic, DigitalInput catapultRetractedLimitSwich)
     {
@@ -64,8 +64,8 @@ public class Catapult {
 			latchPneumatic.set(UNLATCHED); 
 			pusherPneumatic.set(EXTENDED);
 			
-			if(catapultRetractedLimitSwich.get() 
-					|| (System.currentTimeMillis() - lastShooterEventTime > stateDelay)){
+			if(/*catapultRetractedLimitSwich.get() 
+					||*/ (System.currentTimeMillis() - lastShooterEventTime > stateDelay)){
 				catapultState = catapultStates.BallsIn;
 				lastShooterEventTime = 0;
 			}			
