@@ -73,7 +73,8 @@ public class Robot extends IterativeRobot {
 	
     /** Digital Input **/
     //DigitalInput ballIRSwitch = new DigitalInput(); //RIP IR, died 2/11/16 at the hands of Ulf's SuperAwesome piece of Lexan
-    DigitalInput catapultRetractedLimitSwich = new DigitalInput(2);    
+    DigitalInput catapultRetractedLimitSwitchA = new DigitalInput(2);
+    DigitalInput catapultRetractedLimitSwitchB = new DigitalInput(4);
     
     private static final int leftDriveEncoderA = 4;
     private static final int leftDriveEncoderB = 5;
@@ -130,7 +131,7 @@ public class Robot extends IterativeRobot {
         SmartDashboard.putData("Auto choices", chooser);
         transferPneumatic.set(true);
         
-        catapult = new Catapult(latchPneumatic, pusherPneumatic,catapultRetractedLimitSwich);
+        catapult = new Catapult (latchPneumatic, pusherPneumatic,catapultRetractedLimitSwitchA, catapultRetractedLimitSwitchB);
     }
     
 	/**
