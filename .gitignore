@@ -20,3 +20,4 @@ local.properties
 177Robot2016/.idea/.name
 *.iml
 177Robot2016/.idea/encodings.xml
+*.class

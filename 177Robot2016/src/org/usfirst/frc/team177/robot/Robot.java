@@ -73,8 +73,8 @@ public class Robot extends IterativeRobot {
 	
     /** Digital Input **/
     //DigitalInput ballIRSwitch = new DigitalInput(); //RIP IR, died 2/11/16 at the hands of Ulf's SuperAwesome piece of Lexan
-    DigitalInput catapultRetractedLimitSwitchA = new DigitalInput(2);
-    DigitalInput catapultRetractedLimitSwitchB = new DigitalInput(4);
+    DigitalInput catapultRetractedLimitSwitchA = new DigitalInput(8);
+    DigitalInput catapultRetractedLimitSwitchB = new DigitalInput(9);
     
     private static final int leftDriveEncoderA = 4;
     private static final int leftDriveEncoderB = 5;
@@ -114,10 +114,11 @@ public class Robot extends IterativeRobot {
     		rightDriveEncoderA, rightDriveEncoderB);
     
     /* Automode Variables */
-    String autoMode;
+    String autoMode = "";
     double autoDelay = 0;    
     AutoMode auto;
     long autoStartTime;
+    
     
     /**
      * This function is run when the robot is first started up and should be
@@ -166,7 +167,7 @@ public class Robot extends IterativeRobot {
     	
     	switch(autoSelected) {
     	case driveForwardTransferDown:
-    	
+    		auto = new AutoModeDriveForwardTransferDown(this);
             break;
     	case doNothing:
     	default:
@@ -175,12 +176,12 @@ public class Robot extends IterativeRobot {
     	}
     }
     
-    public void disabledPeriodic() 
+    //public void disabledPeriodic() 
 	{	
     	autoSelected = (String) chooser.getSelected();
 		autoSelected = SmartDashboard.getString("Auto Selector", doNothing);		
 		
-		if(autoSelected != autoMode)
+		if(!autoSelected.equals(autoMode))
 		{
 			switch(autoSelected) {
 	    		case driveForwardTransferDown:
@@ -200,6 +201,7 @@ public class Robot extends IterativeRobot {
 		
 		autoDelay = (switchPanel.getX() + 1.0f)*10.0f;  //-1 to 1 gives you a range 0 - 20
 		SmartDashboard.putNumber("Auto Delay", autoDelay);
+		SmartDashboard.putString("Auto Mode", autoMode);
 	}
     
     @SuppressWarnings("unused")

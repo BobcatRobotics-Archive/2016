@@ -23,7 +23,7 @@ public class Catapult {
     
     //State Machine Shooter
     private catapultStates catapultState = catapultStates.NoBall;
-    private static final double stateDelay = 1000; //ms   
+    private static final double stateDelay = 4000; //ms   
     private long lastShooterEventTime = 0;
     
     // definitions to improve code readability
@@ -52,7 +52,7 @@ public class Catapult {
 			}
 			latchPneumatic.set(UNLATCHED);
 			pusherPneumatic.set(RETRACTED);
-			if(System.currentTimeMillis() - lastShooterEventTime > stateDelay) {
+			if(System.currentTimeMillis() - lastShooterEventTime > 1000) {
 				catapultState = catapultStates.Pickup;
 				lastShooterEventTime = 0;
 			}
@@ -65,8 +65,8 @@ public class Catapult {
 			latchPneumatic.set(UNLATCHED); 
 			pusherPneumatic.set(EXTENDED);
 			
-			if(catapultRetractedLimitSwitchA.get() || catapultRetractedLimitSwitchB.get() 
-				|| (System.currentTimeMillis() - lastShooterEventTime > stateDelay)){
+			if(/**catapultRetractedLimitSwitchA.get() || catapultRetractedLimitSwitchB.get() 
+				||**/ (System.currentTimeMillis() - lastShooterEventTime > stateDelay)){
 				catapultState = catapultStates.BallsIn;
 				lastShooterEventTime = 0;
 			}			
