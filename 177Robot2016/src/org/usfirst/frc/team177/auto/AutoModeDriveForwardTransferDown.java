@@ -33,7 +33,7 @@ public class AutoModeDriveForwardTransferDown extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.transferPneumatic.set(true);
+    			robot.setTransferPneumatic(true);
     			robot.drive.tankDrive(0.75,0.75);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
     				robot.drive.tankDrive(0,0);

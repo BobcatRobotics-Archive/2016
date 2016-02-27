@@ -68,7 +68,7 @@ public class Robot extends IterativeRobot {
 	//SAFETY: At the end of the match both the latch and the pusher should be out
 	public Solenoid latchPneumatic = new Solenoid(1); //false = out
 	public DoubleSolenoid pusherPneumatic = new DoubleSolenoid(4,5); //false = out
-	public Solenoid transferPneumatic = new Solenoid(3); //false = out
+	public DoubleSolenoid transferPneumatic = new DoubleSolenoid(6,7); //false = out
 	public Solenoid shiftPneumatic = new Solenoid(0);
 	
     /** Digital Input **/
@@ -130,7 +130,7 @@ public class Robot extends IterativeRobot {
         chooser.addObject("Drive Forward(LowBar)", driveForwardTransferDown);
         chooser.addObject("Drive Forward(Obstacle)", driveForwardTransferUp);
         SmartDashboard.putData("Auto choices", chooser);
-        transferPneumatic.set(true);
+        transferPneumatic.set(DoubleSolenoid.Value.kForward); //TODO: Verify this is correct
         
         catapult = new Catapult (latchPneumatic, pusherPneumatic,catapultRetractedLimitSwitchA, catapultRetractedLimitSwitchB);
     }
@@ -222,7 +222,11 @@ public class Robot extends IterativeRobot {
 		
 		SmartDashboard.putString("test", "yay");
 		
-    	transferPneumatic.set(operatorStick.getRawButton(ButtonSideRollers));
+		if(operatorStick.getRawButton(ButtonSideRollers)) {
+			transferPneumatic.set(DoubleSolenoid.Value.kForward);
+		} else {
+			transferPneumatic.set(DoubleSolenoid.Value.kReverse);
+		}
 		if(operatorStick.getRawButton(ButtonTransfer)) {
 			rollerSideMotor.set(1);
 		}
@@ -242,34 +246,6 @@ public class Robot extends IterativeRobot {
 			catapult.loop(operatorStick.getRawButton(1));
 		}
 		
-		
-		//Pickup State Machine
-		/**switch(pickupState)
-		{
-		case BallAcquired:
-			if(operatorStick.getRawButton(2)) {
-				pickupState = pickupStates.TransferUp;
-			}
-			break;
-		case TransferUp:
-			transferPneumatic.set(false); //out
-			pickupState = pickupStates.DropBall;
-			break;
-		case DropBall:
-			rollerTopMotor.set(operatorStick.getRawAxis(3));
-			rollerSideMotor.set(operatorStick.getRawAxis(3) / 2);  //Scaling for the side motors
-			if(operatorStick.getRawButton(2)) {
-				pickupState = pickupStates.TransferDown;
-			}
-			break;
-		case TransferDown:
-			transferPneumatic.set(true); //in
-			pickupState = pickupStates.BallAcquired;
-			break;
-		default:
-			break;
-		}**/
-
 		//MISSILE SWITCH OVERRIDE
 		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
 			catapult.setState(catapultStates.NoBall);
@@ -282,5 +258,12 @@ public class Robot extends IterativeRobot {
     public void testPeriodic() {
     
     }
-    
+    public void setTransferPneumatic(boolean state) {
+    	if(state) {
+    		transferPneumatic.set(DoubleSolenoid.Value.kForward);
+    	} else {
+    		transferPneumatic.set(DoubleSolenoid.Value.kReverse);
+    	}
+    }
 }
+
