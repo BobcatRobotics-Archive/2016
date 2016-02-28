@@ -20,3 +20,7 @@ local.properties
 177Robot2016/.idea/.name
 *.iml
 177Robot2016/.idea/encodings.xml
+*.class
+build/
+177Robot2016/build/org/usfirst/frc/team177/robot/Robot$pickupStates.class
+177Robot2016/build/*

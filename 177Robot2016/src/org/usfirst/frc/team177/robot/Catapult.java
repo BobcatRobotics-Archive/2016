@@ -9,7 +9,7 @@ public class Catapult {
 	
 	private Solenoid latchPneumatic; 
 	private DoubleSolenoid pusherPneumatic;
-	private DigitalInput catapultRetractedLimitSwich;
+
 	
 	/**Enums**/
     public enum catapultStates {
@@ -33,11 +33,10 @@ public class Catapult {
     private static final DoubleSolenoid.Value EXTENDED = DoubleSolenoid.Value.kReverse;
     private static final DoubleSolenoid.Value RETRACTED = DoubleSolenoid.Value.kForward;
     	
-    Catapult(Solenoid latchPneumatic, DoubleSolenoid pusherPneumatic, DigitalInput catapultRetractedLimitSwich)
+    Catapult(Solenoid latchPneumatic, DoubleSolenoid pusherPneumatic)
     {
     	this.latchPneumatic = latchPneumatic;
-    	this.pusherPneumatic = pusherPneumatic;
-    	this.catapultRetractedLimitSwich = catapultRetractedLimitSwich;    	
+    	this.pusherPneumatic = pusherPneumatic;   	
     }
     
     public void loop(boolean fire)
@@ -64,8 +63,7 @@ public class Catapult {
 			latchPneumatic.set(UNLATCHED); 
 			pusherPneumatic.set(EXTENDED);
 			
-			if(/*catapultRetractedLimitSwich.get() 
-					||*/ (System.currentTimeMillis() - lastShooterEventTime > stateDelay)){
+			if((System.currentTimeMillis() - lastShooterEventTime > stateDelay)){
 				catapultState = catapultStates.BallsIn;
 				lastShooterEventTime = 0;
 			}			

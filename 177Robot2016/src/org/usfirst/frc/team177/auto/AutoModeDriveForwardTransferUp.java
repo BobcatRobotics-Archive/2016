@@ -48,7 +48,7 @@ public class AutoModeDriveForwardTransferUp extends AutoMode {
     }
     	
     public String getName() {
-        return "DriveForward";
+        return "DriveForwardTransferUp";
     }
 
 	@Override

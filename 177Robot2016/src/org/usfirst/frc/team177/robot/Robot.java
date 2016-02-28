@@ -68,12 +68,11 @@ public class Robot extends IterativeRobot {
 	//SAFETY: At the end of the match both the latch and the pusher should be out
 	public Solenoid latchPneumatic = new Solenoid(1); //false = out
 	public DoubleSolenoid pusherPneumatic = new DoubleSolenoid(4,5); //false = out
-	public Solenoid transferPneumatic = new Solenoid(3); //false = out
+	public Solenoid transferPneumatic = new Solenoid(2); //false = out
 	public Solenoid shiftPneumatic = new Solenoid(0);
 	
     /** Digital Input **/
-    //DigitalInput ballIRSwitch = new DigitalInput(); //RIP IR, died 2/11/16 at the hands of Ulf's SuperAwesome piece of Lexan
-    DigitalInput catapultRetractedLimitSwich = new DigitalInput(2);    
+    //DigitalInput ballIRSwitch = new DigitalInput(); //RIP IR, died 2/11/16 at the hands of Ulf's SuperAwesome piece of Lexan 
     
     private static final int leftDriveEncoderA = 4;
     private static final int leftDriveEncoderB = 5;
@@ -113,7 +112,7 @@ public class Robot extends IterativeRobot {
     		rightDriveEncoderA, rightDriveEncoderB);
     
     /* Automode Variables */
-    String autoMode;
+    String autoMode = "";
     double autoDelay = 0;    
     AutoMode auto;
     long autoStartTime;
@@ -130,7 +129,7 @@ public class Robot extends IterativeRobot {
         SmartDashboard.putData("Auto choices", chooser);
         transferPneumatic.set(true);
         
-        catapult = new Catapult(latchPneumatic, pusherPneumatic,catapultRetractedLimitSwich);
+        catapult = new Catapult(latchPneumatic, pusherPneumatic);
     }
     
 	/**
@@ -165,8 +164,11 @@ public class Robot extends IterativeRobot {
     	
     	switch(autoSelected) {
     	case driveForwardTransferDown:
-    	
+    		auto = new AutoModeDriveForwardTransferDown(this);
             break;
+    	case driveForwardTransferUp:
+    		auto = new AutoModeDriveForwardTransferUp(this);
+    		break;
     	case doNothing:
     	default:
     		//Do Nothing
@@ -179,7 +181,7 @@ public class Robot extends IterativeRobot {
     	autoSelected = (String) chooser.getSelected();
 		autoSelected = SmartDashboard.getString("Auto Selector", doNothing);		
 		
-		if(autoSelected != autoMode)
+		if(!autoSelected.equals(autoMode))
 		{
 			switch(autoSelected) {
 	    		case driveForwardTransferDown:
@@ -199,6 +201,7 @@ public class Robot extends IterativeRobot {
 		
 		autoDelay = (switchPanel.getX() + 1.0f)*10.0f;  //-1 to 1 gives you a range 0 - 20
 		SmartDashboard.putNumber("Auto Delay", autoDelay);
+		SmartDashboard.putString("Auto Mode", autoMode);
 	}
     
     @SuppressWarnings("unused")
