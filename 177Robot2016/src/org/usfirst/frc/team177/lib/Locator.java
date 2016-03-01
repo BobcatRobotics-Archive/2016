@@ -26,8 +26,8 @@ public class Locator implements Logable {
                 
         //Set Default Values
         //TODO - need to figure this out.
-        leftEncoder.setDistancePerPulse(1);
-        rightEncoder.setDistancePerPulse(1);
+        leftEncoder.setDistancePerPulse(18.84/64);
+        rightEncoder.setDistancePerPulse(18.84/64);
     
         updateLocation = new UpdateLocation();       
             

@@ -28,6 +28,11 @@ public class Robot extends IterativeRobot {
     final String doNothing = "Do Nothing";
     final String driveForwardTransferDown = "Drive Forward Transfer Down";
     final String driveForwardTransferUp = "Drive Forward Transfer Up";
+    final String driveForwardTransferUpShort = "Drive Forward Transfer Up Short";
+    final String driveToForwardTransferDown = "Drive To Forward Transfer Down";
+    final String driveForwardTransferUpThenBack = "Drive Forward Then Back";
+    final String driveForwardTransferUpTurnAndFire = "Drive Forward Up Then Turn And Fire";
+    final String driveForwardFireDriveForward = "Drive Forward, Fire, Drive Forward";
     String autoSelected;
     SendableChooser chooser;
 	    
@@ -68,7 +73,8 @@ public class Robot extends IterativeRobot {
 	//SAFETY: At the end of the match both the latch and the pusher should be out
 	public Solenoid latchPneumatic = new Solenoid(1); //false = out
 	public DoubleSolenoid pusherPneumatic = new DoubleSolenoid(4,5); //false = out
-	public Solenoid transferPneumatic = new Solenoid(2); //false = out
+	public DoubleSolenoid transferPneumatic = new DoubleSolenoid(2,3); //false = out
+	
 	public Solenoid shiftPneumatic = new Solenoid(0);
 	
     /** Digital Input **/
@@ -91,7 +97,7 @@ public class Robot extends IterativeRobot {
     };
     
     //catapult;
-    Catapult catapult;
+    public Catapult catapult;
     
     
     //State Machine Pickup
@@ -126,10 +132,17 @@ public class Robot extends IterativeRobot {
         chooser.addDefault("Do Nothing", doNothing);
         chooser.addObject("Drive Forward(LowBar)", driveForwardTransferDown);
         chooser.addObject("Drive Forward(Obstacle)", driveForwardTransferUp);
+        chooser.addObject("Drive Forward(Obstacle) Short",driveForwardTransferUpShort);
+        chooser.addObject("Drive To Forward LowBar", driveToForwardTransferDown);
+        chooser.addObject("Drive To Forward LowBar Turn And Fire", driveForwardTransferUpTurnAndFire);
+        chooser.addObject("Drive To Forward LowBar Then Back", driveForwardTransferUpThenBack);
+        chooser.addObject("Drive Forward, Fire, Drive Forward", driveForwardFireDriveForward);
         SmartDashboard.putData("Auto choices", chooser);
-        transferPneumatic.set(true);
+        transferPneumatic.set(DoubleSolenoid.Value.kReverse);
         
         catapult = new Catapult(latchPneumatic, pusherPneumatic);
+        
+        locator.start();
     }
     
 	/**
@@ -142,7 +155,9 @@ public class Robot extends IterativeRobot {
 	 * If using the SendableChooser make sure to add them to the chooser code above as well.
 	 */
     
-    public void autonomousInit() {    			
+    public void autonomousInit() {    	
+    	
+    	locator.Reset();
 		if(auto != null) 
 		{
             auto.autoInit();
@@ -161,26 +176,16 @@ public class Robot extends IterativeRobot {
 		{
             drive.tankDrive(0, 0);
         }    	
-    	
-    	switch(autoSelected) {
-    	case driveForwardTransferDown:
-    		auto = new AutoModeDriveForwardTransferDown(this);
-            break;
-    	case driveForwardTransferUp:
-    		auto = new AutoModeDriveForwardTransferUp(this);
-    		break;
-    	case doNothing:
-    	default:
-    		//Do Nothing
-            break;
-    	}
+    	SmartDashboard.putNumber("Heading", locator.GetHeading());
+    	SmartDashboard.putNumber("X", locator.GetX());
+    	SmartDashboard.putNumber("Y", locator.GetY());
     }
     
     public void disabledPeriodic() 
 	{	
     	autoSelected = (String) chooser.getSelected();
-		autoSelected = SmartDashboard.getString("Auto Selector", doNothing);		
-		
+		//autoSelected = SmartDashboard.getString("Auto Selector", doNothing);		
+
 		if(!autoSelected.equals(autoMode))
 		{
 			switch(autoSelected) {
@@ -188,7 +193,22 @@ public class Robot extends IterativeRobot {
 	    			auto = new AutoModeDriveForwardTransferDown(this);
 	    			break;
 	    		case driveForwardTransferUp:
-	    			auto = new AutoModeDriveForwardTransferUp(this);
+	    			auto = new AutoModeDriveForwardTransferUp(this, 5000);
+	    			break;
+	    		case driveForwardTransferUpShort:
+	    			auto = new AutoModeDriveForwardTransferUp(this, 4000);
+	    			break;
+	    		case driveToForwardTransferDown:
+	    			auto = new AutoModeDriveToTransferDown(this);
+	    			break;
+	    		case driveForwardTransferUpThenBack:
+	    			auto = new AutoModeDriveForwardThenBackTD(this);
+	    			break;
+	    		case driveForwardTransferUpTurnAndFire:
+	    			auto = new AutoModeDriveForwardTurnAndFire(this);
+	    			break;
+	    		case driveForwardFireDriveForward:
+	    			auto = new AutoModeDriveForwardFireDriveForward(this);
 	    			break;
 	    		case doNothing:
 	        	default:
@@ -199,9 +219,10 @@ public class Robot extends IterativeRobot {
 			autoMode = autoSelected;
 		}
 		
-		autoDelay = (switchPanel.getX() + 1.0f)*10.0f;  //-1 to 1 gives you a range 0 - 20
+		autoDelay = switchPanel.getX()*100;
 		SmartDashboard.putNumber("Auto Delay", autoDelay);
 		SmartDashboard.putString("Auto Mode", autoMode);
+		
 	}
     
     @SuppressWarnings("unused")
@@ -220,10 +241,8 @@ public class Robot extends IterativeRobot {
 		drive.tankDrive(left, right);
 		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));
 		
-		SmartDashboard.putString("test", "yay");
-		
-    	transferPneumatic.set(operatorStick.getRawButton(ButtonSideRollers));
-		if(operatorStick.getRawButton(ButtonTransfer)) {
+    	transferPneumatic.set(operatorStick.getRawButton(ButtonSideRollers) ? DoubleSolenoid.Value.kReverse : DoubleSolenoid.Value.kForward);
+    	if(operatorStick.getRawButton(ButtonTransfer)) {
 			rollerSideMotor.set(1);
 		}
 		else {
@@ -273,7 +292,11 @@ public class Robot extends IterativeRobot {
 		//MISSILE SWITCH OVERRIDE
 		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
 			catapult.setState(catapultStates.NoBall);
-		}		
+		}			
+      	
+		SmartDashboard.putNumber("Heading", locator.GetHeading());
+		SmartDashboard.putNumber("X", locator.GetX());
+		SmartDashboard.putNumber("Y", locator.GetY());
     }
     
     /**

@@ -21,7 +21,7 @@ public class Catapult {
     };
     
     //State Machine Shooter
-    private catapultStates catapultState = catapultStates.NoBall;
+    private catapultStates catapultState = catapultStates.PreparingToFire;
     private static final double stateDelay = 1000; //ms   
     private long lastShooterEventTime = 0;
     

@@ -4,9 +4,10 @@
 package org.usfirst.frc.team177.auto;
 
 import org.usfirst.frc.team177.robot.*;
+
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
-public class AutoModeDriveForwardTransferUp extends AutoMode {
+public class AutoModeDriveToTransferDown extends AutoMode {
     
 	enum AutoStates {
 		DriveForward,
@@ -16,17 +17,15 @@ public class AutoModeDriveForwardTransferUp extends AutoMode {
     private AutoStates state = AutoStates.DriveForward;
     //State Machine Auto
     long lastDriveForwardEventTime = 0;
-    double driveForwardDelay = 5000;
+    double maxDriveForward = 10000;
 
-    public AutoModeDriveForwardTransferUp(Robot robot, double driveForwardTime) {
+    public AutoModeDriveToTransferDown(Robot robot) {
         super(robot);
         System.out.println("AutoModeDriveForward Constructor");
-        driveForwardDelay = driveForwardTime;
     }    
     
     public void autoInit() {    	
-    	state = AutoStates.DriveForward;   
-    	lastDriveForwardEventTime = 0;
+    	state = AutoStates.DriveForward;    	
     }
 
     public void autoPeriodic() {
@@ -36,13 +35,9 @@ public class AutoModeDriveForwardTransferUp extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.drive.tankDrive(-1,-1);
-    			if(System.currentTimeMillis() - lastDriveForwardEventTime > 1000)
-    			{
-    				//put pickup down
-    				robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
-    			}
-    			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
+    			
+    			if(DriveTo(130, 0, -0.75) || System.currentTimeMillis() - lastDriveForwardEventTime > maxDriveForward) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;
     				state = AutoStates.Stop;
@@ -56,7 +51,7 @@ public class AutoModeDriveForwardTransferUp extends AutoMode {
     }
     	
     public String getName() {
-        return "DriveForwardTransferUp";
+        return "DriveForwardTransferDown";
     }
 
 	@Override

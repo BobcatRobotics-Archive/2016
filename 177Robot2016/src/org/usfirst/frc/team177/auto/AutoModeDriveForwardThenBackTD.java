@@ -6,11 +6,13 @@ package org.usfirst.frc.team177.auto;
 import org.usfirst.frc.team177.robot.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
-public class AutoModeDriveForwardTransferDown extends AutoMode {
+public class AutoModeDriveForwardThenBackTD extends AutoMode {
     
 	enum AutoStates {
 		PutPickupDown,
 		DriveForward,
+		Pause,
+		DriveBackward,
 		Stop
 	};
 	
@@ -18,11 +20,13 @@ public class AutoModeDriveForwardTransferDown extends AutoMode {
     //State Machine Auto
     long lastDriveForwardEventTime = 0;
     double pickupDownDelay = 2000;
-    double driveForwardDelay = 4000;
+    double driveForwardDelay = 3500;
+    double pauseDelay = 2000;
+    double driveBackwardDelay = 4000;
 
-    public AutoModeDriveForwardTransferDown(Robot robot) {
+    public AutoModeDriveForwardThenBackTD(Robot robot) {
         super(robot);
-        System.out.println("AutoModeDriveForward Constructor");
+        System.out.println("AutoModeDriveForward The back Constructor");
     }    
     
     public void autoInit() {    	
@@ -52,7 +56,29 @@ public class AutoModeDriveForwardTransferDown extends AutoMode {
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;
-    				state = AutoStates.Stop;
+    				state = AutoStates.Pause;
+    			}
+    			break;
+    		case Pause:
+    			if(lastDriveForwardEventTime == 0) { 
+    				lastDriveForwardEventTime = System.currentTimeMillis();
+    			}		
+    			if(System.currentTimeMillis() - lastDriveForwardEventTime > pauseDelay) {
+    				robot.drive.tankDrive(0,0);
+    				lastDriveForwardEventTime = 0;
+    				state = AutoStates.DriveBackward;
+    			}
+    			break;
+    		case DriveBackward:
+    			if(lastDriveForwardEventTime == 0) { 
+    				lastDriveForwardEventTime = System.currentTimeMillis();
+    			}
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
+    			robot.drive.tankDrive(0.75,0.75);
+    			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveBackwardDelay) {
+    				robot.drive.tankDrive(0,0);
+    				lastDriveForwardEventTime = 0;
+    				state = AutoStates.Pause;
     			}
     			break;
     		case Stop:
@@ -63,7 +89,7 @@ public class AutoModeDriveForwardTransferDown extends AutoMode {
     }
     	
     public String getName() {
-        return "DriveForwardTransferDown";
+        return "AutoModeDriveForwardThenBackTD";
     }
 
 	@Override
