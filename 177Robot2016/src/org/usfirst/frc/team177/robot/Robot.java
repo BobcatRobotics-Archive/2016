@@ -43,9 +43,10 @@ public class Robot extends IterativeRobot {
 	private static final int MotorDriveFR = 0; //Front Right 888
 	
 	private static final int MotorRollerTop = 4; //Top Roller 888
-	private static final int MotorRollerSide = 5; //Side Roller 888
+	private static final int MotorRollerSide = 7; //Side Roller 888
 	
-	private static final int MotorClimb = 6; //Climb Motor 888
+	private static final int MotorWinch = 5; 
+	private static final int MotorTape = 6;
 	/**Initialize Victors**/
 	Victor rearLeftMotor = new Victor(MotorDriveRL);
 	Victor frontLeftMotor = new Victor(MotorDriveFL);
@@ -56,7 +57,8 @@ public class Robot extends IterativeRobot {
 	Victor rollerTopMotor = new Victor(MotorRollerTop);
 	Victor rollerSideMotor = new Victor(MotorRollerSide);
 	
-	Victor climbMotor = new Victor(MotorClimb);
+	Victor winchMotor = new Victor(MotorWinch);
+	Victor tapeMotor = new Victor(MotorTape);
 	
 	/**Joysticks**/    
 	Joystick leftStick = new Joystick(0);
