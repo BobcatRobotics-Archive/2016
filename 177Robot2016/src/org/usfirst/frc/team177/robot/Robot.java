@@ -57,8 +57,8 @@ public class Robot extends IterativeRobot {
 	Victor rollerTopMotor = new Victor(MotorRollerTop);
 	Victor rollerSideMotor = new Victor(MotorRollerSide);
 	
-	Victor winchMotor = new Victor(MotorWinch);
-	Victor tapeMotor = new Victor(MotorTape);
+	Victor winchMotor = new Victor(MotorWinch); //CIM
+	Victor tapeMotor = new Victor(MotorTape); //BAG
 	
 	/**Joysticks**/    
 	Joystick leftStick = new Joystick(0);
@@ -108,8 +108,8 @@ public class Robot extends IterativeRobot {
     
     //Controller Mapping
     //Controller
-    private static final int ButtonTransfer = 8;
-    private static final int ButtonSideRollers = 7;
+    private static final int ButtonTransfer = 7;
+    private static final int ButtonSideRollers = 8;
     //Right Joystick
     private static final int ButtonShift = 3;
     //Left Joystick
@@ -241,10 +241,9 @@ public class Robot extends IterativeRobot {
     	double left = leftStick.getRawAxis(axisY);
 		double right = rightStick.getRawAxis(axisY);
 		drive.tankDrive(left, right);
-		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));
-		
-    	transferPneumatic.set(operatorStick.getRawButton(ButtonSideRollers) ? DoubleSolenoid.Value.kReverse : DoubleSolenoid.Value.kForward);
-    	if(operatorStick.getRawButton(ButtonTransfer)) {
+		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));	
+    	transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+    	if(operatorStick.getRawButton(ButtonSideRollers)) {
 			rollerSideMotor.set(1);
 		}
 		else {
@@ -263,43 +262,45 @@ public class Robot extends IterativeRobot {
 			catapult.loop(operatorStick.getRawButton(1));
 		}
 		
-		
-		//Pickup State Machine
-		/**switch(pickupState)
-		{
-		case BallAcquired:
-			if(operatorStick.getRawButton(2)) {
-				pickupState = pickupStates.TransferUp;
-			}
-			break;
-		case TransferUp:
-			transferPneumatic.set(false); //out
-			pickupState = pickupStates.DropBall;
-			break;
-		case DropBall:
-			rollerTopMotor.set(operatorStick.getRawAxis(3));
-			rollerSideMotor.set(operatorStick.getRawAxis(3) / 2);  //Scaling for the side motors
-			if(operatorStick.getRawButton(2)) {
-				pickupState = pickupStates.TransferDown;
-			}
-			break;
-		case TransferDown:
-			transferPneumatic.set(true); //in
-			pickupState = pickupStates.BallAcquired;
-			break;
-		default:
-			break;
-		}**/
 
 		//MISSILE SWITCH OVERRIDE
-		if(switchPanel.getRawButton(4) && operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
-			catapult.setState(catapultStates.NoBall);
+		if(switchPanel.getRawButton(4)) {
+			if (operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
+				catapult.setState(catapultStates.NoBall);
+			}
+			winchMotor.set(operatorStick.getRawAxis(2));
+			tapeMotor.set(operatorStick.getRawAxis(3));
 		}			
       	
 		SmartDashboard.putNumber("Heading", locator.GetHeading());
 		SmartDashboard.putNumber("X", locator.GetX());
 		SmartDashboard.putNumber("Y", locator.GetY());
     }
+		// Hangar control
+		/**if (operatorStick.getRawButton(3)) {
+			long hangTime = System.currentTimeMillis();
+			while (System.currentTimeMillis() - hangTime <= 50.0) {
+				tapeMotor.set(0.5);
+			}
+			
+			hangTime = System.currentTimeMillis();
+			while (System.currentTimeMillis() - hangTime <= 750.0) {
+				tapeMotor.set(1.0);
+			}
+			
+			winchMotor.set()
+			 Run bag motor @ 50% voltage in reverse for 50ms (time will need to be fine-tuned)
+
+			        Run bag motor @ 100% voltage forward for 750ms (time will need to be fine-tuned OR replaced with a sensor)
+
+			 We will need to see what the consistency is for how much tape measure we are shooting out via a timing method
+
+			    Simultaneously run bag motor in reverse @ 50% voltage (voltage will need to be fine-tuned) and CIM forward @100% voltage  driver controlled
+
+			   The idea is to retract the tape measure at approximately the same rate that the winch retracts
+		}
+		
+    }**/
     
     /**
      * This function is called periodically during test mode
