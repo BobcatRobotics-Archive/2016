@@ -105,6 +105,15 @@ public class Robot extends IterativeRobot {
     //State Machine Pickup
     pickupStates pickupState = pickupStates.BallAcquired;
    
+    //State Machine Climber
+    long climberEventTime; 
+    public enum climbStates {
+           	Stowed,
+           	ResetTape,
+           	ShootTape,
+           	Climb
+           };
+    private climbStates climbState = climbStates.Stowed;
     
     //Controller Mapping
     //Controller
@@ -145,6 +154,7 @@ public class Robot extends IterativeRobot {
         catapult = new Catapult(latchPneumatic, pusherPneumatic);
         
         locator.start();
+        climbStates climbState = climbStates.Stowed;
     }
     
 	/**
@@ -263,44 +273,54 @@ public class Robot extends IterativeRobot {
 		}
 		
 
-		//MISSILE SWITCH OVERRIDE
-		if(switchPanel.getRawButton(4)) {
-			if (operatorStick.getRawButton(1)) { //This is done so that if the missile switch is fired the driver can fire.  Even if it is a terrible,terrible idea
-				catapult.setState(catapultStates.NoBall);
-			}
+		//Climber OVERRIDE
+		if (operatorStick.getRawButton(4)) {
 			winchMotor.set(operatorStick.getRawAxis(2));
 			tapeMotor.set(operatorStick.getRawAxis(3));
-		}			
+		}
       	
 		SmartDashboard.putNumber("Heading", locator.GetHeading());
 		SmartDashboard.putNumber("X", locator.GetX());
 		SmartDashboard.putNumber("Y", locator.GetY());
-    }
-		// Hangar control
-		/**if (operatorStick.getRawButton(3)) {
-			long hangTime = System.currentTimeMillis();
-			while (System.currentTimeMillis() - hangTime <= 50.0) {
-				tapeMotor.set(0.5);
-			}
-			
-			hangTime = System.currentTimeMillis();
-			while (System.currentTimeMillis() - hangTime <= 750.0) {
-				tapeMotor.set(1.0);
-			}
-			
-			winchMotor.set()
-			 Run bag motor @ 50% voltage in reverse for 50ms (time will need to be fine-tuned)
-
-			        Run bag motor @ 100% voltage forward for 750ms (time will need to be fine-tuned OR replaced with a sensor)
-
-			 We will need to see what the consistency is for how much tape measure we are shooting out via a timing method
-
-			    Simultaneously run bag motor in reverse @ 50% voltage (voltage will need to be fine-tuned) and CIM forward @100% voltage  driver controlled
-
-			   The idea is to retract the tape measure at approximately the same rate that the winch retracts
-		}
 		
-    }**/
+    
+    switch (climbState)
+    		{
+    		case Stowed:
+    			if(switchPanel.getRawButton(4)) {
+    				climbState = climbStates.ResetTape;
+    			}
+    			break;
+    		case ResetTape:
+    			if(climberEventTime == 0) { 
+    				climberEventTime = System.currentTimeMillis();
+    			}
+    			tapeMotor.set(-.5);			
+    			if(System.currentTimeMillis() -climberEventTime > 50) {
+    				climbState = climbStates.ShootTape;
+    				climberEventTime = 0;
+    			}
+    			break;
+    		case ShootTape:
+    				if(climberEventTime == 0) { 
+    				climberEventTime = System.currentTimeMillis();
+    			}
+    			tapeMotor.set(1);		
+    			if(System.currentTimeMillis() - climberEventTime > 750) {
+    				climbState = climbStates.Climb;
+    				climberEventTime = 0;
+    			}
+    			break;
+    		case Climb:
+    			if(operatorStick.getRawAxis(3) > 0) {
+    				tapeMotor.set(-5);
+    				winchMotor.set(1);
+    			}
+    			break;
+    		default:
+    			break;
+    		}
+    }
     
     /**
      * This function is called periodically during test mode
