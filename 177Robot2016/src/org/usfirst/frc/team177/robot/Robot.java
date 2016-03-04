@@ -1,6 +1,7 @@
 
 package org.usfirst.frc.team177.robot;
 
+import org.usfirst.frc.team177.Vision.Vision;
 import org.usfirst.frc.team177.auto.*;
 import org.usfirst.frc.team177.lib.Locator;
 
@@ -14,7 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
 /**
@@ -33,6 +33,7 @@ public class Robot extends IterativeRobot {
     final String driveForwardTransferUpThenBack = "Drive Forward Then Back";
     final String driveForwardTransferUpTurnAndFire = "Drive Forward Up Then Turn And Fire";
     final String driveForwardFireDriveForward = "Drive Forward, Fire, Drive Forward";
+    final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision";
     String autoSelected;
     SendableChooser chooser;
 	    
@@ -101,6 +102,8 @@ public class Robot extends IterativeRobot {
     //catapult;
     public Catapult catapult;
     
+    //vision
+    public Vision vision;
     
     //State Machine Pickup
     pickupStates pickupState = pickupStates.BallAcquired;
@@ -110,6 +113,8 @@ public class Robot extends IterativeRobot {
     //Controller
     private static final int ButtonTransfer = 7;
     private static final int ButtonSideRollers = 8;
+    private static final int ButtonFire = 1;
+    private static final int ButtonAimFire = 2; //James - confirm this is ok
     //Right Joystick
     private static final int ButtonShift = 3;
     //Left Joystick
@@ -139,12 +144,14 @@ public class Robot extends IterativeRobot {
         chooser.addObject("Drive To Forward LowBar Turn And Fire", driveForwardTransferUpTurnAndFire);
         chooser.addObject("Drive To Forward LowBar Then Back", driveForwardTransferUpThenBack);
         chooser.addObject("Drive Forward, Fire, Drive Forward", driveForwardFireDriveForward);
+        chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision);
         SmartDashboard.putData("Auto choices", chooser);
         transferPneumatic.set(DoubleSolenoid.Value.kReverse);
         
-        catapult = new Catapult(latchPneumatic, pusherPneumatic);
+        catapult = new Catapult(this, latchPneumatic, pusherPneumatic);
         
         locator.start();
+        vision = new Vision();
     }
     
 	/**
@@ -183,8 +190,15 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Y", locator.GetY());
     }
     
+    long visionTestTimer = 0;
+    @Override
     public void disabledPeriodic() 
 	{	
+		if(visionTestTimer == 0 || System.currentTimeMillis() - visionTestTimer > 15000) {
+			double bearing = vision.getBearing();
+			SmartDashboard.putNumber("Target Bearing", bearing);
+			visionTestTimer = System.currentTimeMillis();
+		}
     	autoSelected = (String) chooser.getSelected();
 		//autoSelected = SmartDashboard.getString("Auto Selector", doNothing);		
 
@@ -208,6 +222,9 @@ public class Robot extends IterativeRobot {
 	    			break;
 	    		case driveForwardTransferUpTurnAndFire:
 	    			auto = new AutoModeDriveForwardTurnAndFire(this);
+	    			break;
+	    		case driveForwardTransferUpTurnAndFireWithVision:
+	    			auto = new AutoModeDriveForwardTurnAndFireWithVision(this);
 	    			break;
 	    		case driveForwardFireDriveForward:
 	    			auto = new AutoModeDriveForwardFireDriveForward(this);
@@ -240,6 +257,8 @@ public class Robot extends IterativeRobot {
     	//Driving
     	double left = leftStick.getRawAxis(axisY);
 		double right = rightStick.getRawAxis(axisY);
+		//uncomment this line to disable driver input while auto aiming
+		//if (catapult.getState() != catapultStates.Aiming)
 		drive.tankDrive(left, right);
 		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));	
     	transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
@@ -259,7 +278,7 @@ public class Robot extends IterativeRobot {
 		}
 		else
 		{
-			catapult.loop(operatorStick.getRawButton(1));
+			catapult.loop(operatorStick.getRawButton(ButtonFire), operatorStick.getRawButton(ButtonAimFire));
 		}
 		
 

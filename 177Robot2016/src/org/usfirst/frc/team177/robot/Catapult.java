@@ -1,14 +1,16 @@
 package org.usfirst.frc.team177.robot;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Catapult {
 
 	
 	private Solenoid latchPneumatic; 
 	private DoubleSolenoid pusherPneumatic;
+	
+	Robot robot; //reference to main implementation
 
 	
 	/**Enums**/
@@ -17,13 +19,19 @@ public class Catapult {
     	Pickup,
     	BallsIn,
     	PreparingToFire,
-    	ReadyToFire
+    	ReadyToFire,
+    	Aiming
     };
     
     //State Machine Shooter
     private catapultStates catapultState = catapultStates.PreparingToFire;
-    private static final double stateDelay = 1000; //ms   
+    private static final double stateDelay = 1000; //ms
+    private static final double aimTimeout = 30000; //ms   
+    private static final double aimThreshold = 2; //+/- 2 degrees == on target
+    private static final double turnSpeed = 0.75;
+    		
     private long lastShooterEventTime = 0;
+    private double targetHeading = 0;
     
     // definitions to improve code readability
     //latch pneumatic states
@@ -33,13 +41,20 @@ public class Catapult {
     private static final DoubleSolenoid.Value EXTENDED = DoubleSolenoid.Value.kReverse;
     private static final DoubleSolenoid.Value RETRACTED = DoubleSolenoid.Value.kForward;
     	
-    Catapult(Solenoid latchPneumatic, DoubleSolenoid pusherPneumatic)
+    Catapult(Robot robot, Solenoid latchPneumatic, DoubleSolenoid pusherPneumatic)
     {
+    	this.robot = robot;
     	this.latchPneumatic = latchPneumatic;
     	this.pusherPneumatic = pusherPneumatic;   	
     }
     
+    //wrapper function to avoid having to rework a bunch of existing code
     public void loop(boolean fire)
+    {
+    	loop(fire, false);
+    }
+    
+    public void loop(boolean fire, boolean aimThenFire)
     {
     	//Firing State Machine
 		switch (catapultState)
@@ -94,6 +109,69 @@ public class Catapult {
 			if(fire) {
 				catapultState = catapultStates.NoBall;
 			}
+			else if(aimThenFire)
+			{
+				catapultState = catapultStates.Aiming;
+			}						
+			break;
+		case Aiming:
+			if(lastShooterEventTime == 0) { 
+				//just entered state, figure out where we're turning to
+				double bearing = robot.vision.getBearing();
+				if(bearing == robot.vision.BAD_BEARING)
+				{
+					//no target!
+					//todo fire anyway or give up?
+					//going with give up for now
+					catapultState = catapultStates.ReadyToFire;
+					SmartDashboard.putString("Aim Sequence", "No Target!");
+				}					
+				else
+				{
+					double heading = robot.locator.GetHeading();
+					targetHeading = heading+bearing;
+					//wrap to 0 - 360 range
+					while (targetHeading < 0) { targetHeading += 360.0; }					
+					while (targetHeading > 360) { targetHeading -= 360.0; }					
+				}								
+				
+				
+				lastShooterEventTime = System.currentTimeMillis();				
+			}
+			
+			double targetBearing = targetHeading - robot.locator.GetHeading();
+			if(targetBearing > 180) targetBearing -= 360;
+			if(targetBearing < -180) targetBearing += 360;			
+			
+			SmartDashboard.putString("Aim Sequence", "Target Bearing " + targetBearing);
+			
+			//determine turn direction			
+			if(targetBearing < 0) {
+				//turn left
+				robot.drive.tankDrive(turnSpeed,-1.0*turnSpeed);
+			} else {		
+				//turn right
+				robot.drive.tankDrive(-1.0*turnSpeed,turnSpeed);
+			}
+						
+			if(Math.abs(targetBearing) < aimThreshold || System.currentTimeMillis() - lastShooterEventTime > aimTimeout) {
+				if(Math.abs(targetBearing) < aimThreshold)
+				{
+					SmartDashboard.putString("Aim Sequence", "Aim Successful");
+					//Fire!
+					catapultState = catapultStates.NoBall;
+
+				}
+				else
+				{
+					SmartDashboard.putString("Aim Sequence", "Aim Timeout");
+					//Fire! -- May want to change this
+					catapultState = catapultStates.NoBall;
+				}
+								
+				robot.drive.tankDrive(0,0); //stop turning				
+				lastShooterEventTime = 0;
+			}			
 			break;
 		default:
 			break;
@@ -105,6 +183,4 @@ public class Catapult {
     {
     	catapultState = newState;
     }
-    
-    
 }
