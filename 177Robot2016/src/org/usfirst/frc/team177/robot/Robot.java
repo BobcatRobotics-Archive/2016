@@ -2,7 +2,7 @@
 package org.usfirst.frc.team177.robot;
 
 //disable vision until we're ready to try it
-//import org.usfirst.frc.team177.Vision.Vision;
+import org.usfirst.frc.team177.Vision.Vision;
 import org.usfirst.frc.team177.auto.*;
 import org.usfirst.frc.team177.lib.Locator;
 
@@ -104,7 +104,7 @@ public class Robot extends IterativeRobot {
     public Catapult catapult;
     
     //vision
-//    public Vision vision;
+    public Vision vision;
     
     //State Machine Pickup
     pickupStates pickupState = pickupStates.BallAcquired;
@@ -124,7 +124,7 @@ public class Robot extends IterativeRobot {
     private static final int ButtonTransfer = 7;
     private static final int ButtonSideRollers = 8;
     private static final int ButtonFire = 1;
-    private static final int ButtonAimFire = 2; //James - confirm this is ok
+    private static final int ButtonAimFire = 2; //James - confirm this is ok...  It is.
     //Right Joystick
     private static final int ButtonShift = 3;
     //Left Joystick
@@ -162,7 +162,7 @@ public class Robot extends IterativeRobot {
         
         locator.start();
 
-//        vision = new Vision();
+        vision = new Vision();
 
         climbState = climbStates.Stowed;
     }
@@ -207,14 +207,13 @@ public class Robot extends IterativeRobot {
     @Override
     public void disabledPeriodic() 
 	{	
-/*		if(visionTestTimer == 0 || System.currentTimeMillis() - visionTestTimer > 15000) {
+		if(visionTestTimer == 0 || System.currentTimeMillis() - visionTestTimer > 15000) {
 			double bearing = vision.getBearing();
 			SmartDashboard.putNumber("Target Bearing", bearing);
 			visionTestTimer = System.currentTimeMillis();
 		}
-*/		
-    	autoSelected = (String) chooser.getSelected();
-		//autoSelected = SmartDashboard.getString("Auto Selector", doNothing);		
+	
+    	autoSelected = (String) chooser.getSelected();		
 
 		if(!autoSelected.equals(autoMode))
 		{
@@ -277,7 +276,7 @@ public class Robot extends IterativeRobot {
 		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));	
     	transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
     	if(operatorStick.getRawButton(ButtonSideRollers)) {
-			rollerSideMotor.set(1);
+			rollerSideMotor.set(-1);
 		}
 		else {
 			rollerSideMotor.set(0);
@@ -298,8 +297,11 @@ public class Robot extends IterativeRobot {
 
 		//Climber OVERRIDE
 		if (operatorStick.getRawButton(4)) {
-			winchMotor.set(operatorStick.getRawAxis(2));
-			tapeMotor.set(operatorStick.getRawAxis(3));
+			winchMotor.set(operatorStick.getRawButton(5)?0.5:0);
+			tapeMotor.set(operatorStick.getRawButton(6)?0.5:0);
+		} else {
+			winchMotor.set(0);
+			tapeMotor.set(0);
 		}
       	
 		SmartDashboard.putNumber("Heading", locator.GetHeading());
@@ -311,18 +313,7 @@ public class Robot extends IterativeRobot {
 		{
 			case Stowed:
 				if(switchPanel.getRawButton(4)) {
-					climbState = climbStates.ResetTape;
-				}
-				break;
-			case ResetTape:
-				if(climberEventTime == 0) { 
-					climberEventTime = System.currentTimeMillis();
-				}
-				tapeMotor.set(-0.5);			
-				if(System.currentTimeMillis() - climberEventTime > 50) {
-					tapeMotor.set(0);
 					climbState = climbStates.ShootTape;
-					climberEventTime = 0;
 				}
 				break;
 			case ShootTape:

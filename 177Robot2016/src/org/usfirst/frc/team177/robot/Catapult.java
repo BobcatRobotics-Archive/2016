@@ -115,7 +115,7 @@ public class Catapult {
 			}						
 			break;
 		case Aiming:
-/*			if(lastShooterEventTime == 0) { 
+			if(lastShooterEventTime == 0) { 
 				//just entered state, figure out where we're turning to
 				double bearing = robot.vision.getBearing();
 				if(bearing == robot.vision.BAD_BEARING)
@@ -172,7 +172,6 @@ public class Catapult {
 				robot.drive.tankDrive(0,0); //stop turning				
 				lastShooterEventTime = 0;
 			}			
-			*/
 			
 			//remove when vision is enabled
 			catapultState = catapultStates.NoBall;
