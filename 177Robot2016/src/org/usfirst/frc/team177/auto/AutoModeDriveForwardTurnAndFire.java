@@ -24,7 +24,7 @@ public class AutoModeDriveForwardTurnAndFire extends AutoMode {
     double pickupDownDelay = 2000;
     double driveForwardDelay = 4500;
     double pauseDelay = 500;
-    double turnHeading = 45;
+    double turnHeading = 55;
     double turnDelay = 3000;
     
     boolean fireNow = false;
@@ -38,6 +38,7 @@ public class AutoModeDriveForwardTurnAndFire extends AutoMode {
     	state = AutoStates.PutPickupDown; 
     	fireNow = false;
     	lastDriveForwardEventTime = 0;
+    	robot.locator.Reset();
     }
 
     public void autoPeriodic() {
@@ -47,7 +48,7 @@ public class AutoModeDriveForwardTurnAndFire extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > pickupDownDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;
@@ -59,7 +60,7 @@ public class AutoModeDriveForwardTurnAndFire extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
     			robot.drive.tankDrive(-0.75,-0.75);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
     				robot.drive.tankDrive(0,0);
@@ -81,7 +82,7 @@ public class AutoModeDriveForwardTurnAndFire extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
     			robot.drive.tankDrive(-0.75,0.75);
     			if((robot.locator.GetHeading() > turnHeading && robot.locator.GetHeading() < 180) || System.currentTimeMillis() - lastDriveForwardEventTime > turnDelay) {
     				robot.drive.tankDrive(0,0);

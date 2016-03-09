@@ -6,7 +6,7 @@ package org.usfirst.frc.team177.auto;
 import org.usfirst.frc.team177.robot.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
-public class AutoModeDriveForwardTransferUp extends AutoMode {
+public class AutoModeRoughTerain extends AutoMode {
     
 	enum AutoStates {
 		DriveForward,
@@ -18,7 +18,7 @@ public class AutoModeDriveForwardTransferUp extends AutoMode {
     long lastDriveForwardEventTime = 0;
     double driveForwardDelay = 5000;
 
-    public AutoModeDriveForwardTransferUp(Robot robot, double driveForwardTime) {
+    public AutoModeRoughTerain(Robot robot, double driveForwardTime) {
         super(robot);
         System.out.println("AutoModeDriveForward Constructor");
         driveForwardDelay = driveForwardTime;
@@ -37,11 +37,6 @@ public class AutoModeDriveForwardTransferUp extends AutoMode {
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
     			robot.drive.tankDrive(-1,-1);
-    			if(System.currentTimeMillis() - lastDriveForwardEventTime > 2000)
-    			{
-    				//put pickup down
-    				robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
-    			}
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;

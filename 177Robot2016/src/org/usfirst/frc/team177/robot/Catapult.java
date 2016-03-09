@@ -26,9 +26,9 @@ public class Catapult {
     //State Machine Shooter
     private catapultStates catapultState = catapultStates.PreparingToFire;
     private static final double stateDelay = 1000; //ms
-    private static final double aimTimeout = 30000; //ms   
+    private static final double aimTimeout = 5000; //ms   
     private static final double aimThreshold = 2; //+/- 2 degrees == on target
-    private static final double turnSpeed = 0.75;
+    private static final double turnSpeed = 1;
     		
     private long lastShooterEventTime = 0;
     private double targetHeading = 0;
@@ -132,7 +132,7 @@ public class Catapult {
 					targetHeading = heading+bearing;
 					//wrap to 0 - 360 range
 					while (targetHeading < 0) { targetHeading += 360.0; }					
-					while (targetHeading > 360) { targetHeading -= 360.0; }					
+					while (targetHeading >= 360) { targetHeading -= 360.0; }					
 				}								
 				
 				
@@ -159,22 +159,22 @@ public class Catapult {
 				{
 					SmartDashboard.putString("Aim Sequence", "Aim Successful");
 					//Fire!
-					catapultState = catapultStates.NoBall;
-
+					//catapultState = catapultStates.NoBall;
+					catapultState = catapultStates.ReadyToFire;
+					
 				}
 				else
 				{
 					SmartDashboard.putString("Aim Sequence", "Aim Timeout");
 					//Fire! -- May want to change this
-					catapultState = catapultStates.NoBall;
+					//catapultState = catapultStates.NoBall;
+					catapultState = catapultStates.ReadyToFire;
 				}
 								
 				robot.drive.tankDrive(0,0); //stop turning				
 				lastShooterEventTime = 0;
 			}			
-			
-			//remove when vision is enabled
-			catapultState = catapultStates.NoBall;
+		
 			break;
 		default:
 			break;
@@ -186,4 +186,8 @@ public class Catapult {
     {
     	catapultState = newState;
     }
+
+	public catapultStates getState() {
+		return catapultState;
+	}
 }

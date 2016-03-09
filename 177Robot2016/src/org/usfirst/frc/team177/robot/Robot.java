@@ -35,6 +35,7 @@ public class Robot extends IterativeRobot {
     final String driveForwardTransferUpTurnAndFire = "Drive Forward Up Then Turn And Fire";
     final String driveForwardFireDriveForward = "Drive Forward, Fire, Drive Forward";
     final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision";
+    final String roughTerain = "Rough Terain";
     String autoSelected;
     SendableChooser chooser;
 	    
@@ -155,8 +156,9 @@ public class Robot extends IterativeRobot {
         chooser.addObject("Drive To Forward LowBar Then Back", driveForwardTransferUpThenBack);
         chooser.addObject("Drive Forward, Fire, Drive Forward", driveForwardFireDriveForward);
         chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision);
+        chooser.addObject(roughTerain, roughTerain);
         SmartDashboard.putData("Auto choices", chooser);
-        transferPneumatic.set(DoubleSolenoid.Value.kReverse);
+        
         
         catapult = new Catapult(this, latchPneumatic, pusherPneumatic);
         
@@ -242,6 +244,9 @@ public class Robot extends IterativeRobot {
 	    		case driveForwardFireDriveForward:
 	    			auto = new AutoModeDriveForwardFireDriveForward(this);
 	    			break;
+	    		case roughTerain:
+	    			auto = new AutoModeRoughTerain(this, 4000);
+	    			break;
 	    		case doNothing:
 	        	default:
 	        		//Do Nothing
@@ -261,6 +266,7 @@ public class Robot extends IterativeRobot {
 	public void teleopInit() {
     	catapult.setState(catapultStates.BallsIn);
     	pickupStates pickupState = pickupStates.BallAcquired;
+    	transferPneumatic.set(DoubleSolenoid.Value.kReverse);
     }
     
     /**
@@ -296,22 +302,28 @@ public class Robot extends IterativeRobot {
 		
 
 		//Climber OVERRIDE
-		if (operatorStick.getRawButton(4)) {
-			winchMotor.set(operatorStick.getRawButton(5)?0.5:0);
-			tapeMotor.set(operatorStick.getRawButton(6)?0.5:0);
-		} else {
-			winchMotor.set(0);
-			tapeMotor.set(0);
-		}
+		
       	
 		SmartDashboard.putNumber("Heading", locator.GetHeading());
 		SmartDashboard.putNumber("X", locator.GetX());
 		SmartDashboard.putNumber("Y", locator.GetY());
 		
-
-		switch (climbState)
-		{
+		if (operatorStick.getRawButton(4)) {
+			if(operatorStick.getRawButton(5)) {
+				winchMotor.set(0.5);	
+			} else if (operatorStick.getRawButton(10)) {
+				winchMotor.set(-0.5);
+			} else {
+				winchMotor.set(0);
+			}
+			tapeMotor.set(operatorStick.getRawButton(6)?0.5:0);
+		} else {
+			switch (climbState)
+			{
 			case Stowed:
+				winchMotor.set(0);
+				tapeMotor.set(0);
+
 				if(switchPanel.getRawButton(4)) {
 					climbState = climbStates.ShootTape;
 				}
@@ -320,7 +332,7 @@ public class Robot extends IterativeRobot {
 				if(climberEventTime == 0) { 
 					climberEventTime = System.currentTimeMillis();
 				}
-				tapeMotor.set(1);		
+				tapeMotor.set(0.75);		
 				if(System.currentTimeMillis() - climberEventTime > 750) {
 					tapeMotor.set(0);
 					climbState = climbStates.Climb;
@@ -328,16 +340,24 @@ public class Robot extends IterativeRobot {
 				}
 				break;
 			case Climb:
-				if(operatorStick.getRawAxis(3) > 0) {
+				if(operatorStick.getRawButton(3)) {
 					tapeMotor.set(-0.5);
 					winchMotor.set(1);
 				} else {
 					tapeMotor.set(0);
 					winchMotor.set(0);
 				}
+
+				if(!switchPanel.getRawButton(4)) {
+					climbState = climbStates.Stowed;
+				}
 				break;
 			default:
+				winchMotor.set(0);
+				tapeMotor.set(0);
+
 				break;
+			}
 		}
     }
     

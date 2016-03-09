@@ -40,7 +40,7 @@ public class AutoModeDriveForwardThenBackTD extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > pickupDownDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;
@@ -51,7 +51,7 @@ public class AutoModeDriveForwardThenBackTD extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
     			robot.drive.tankDrive(-0.75,-0.75);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
     				robot.drive.tankDrive(0,0);
@@ -73,7 +73,7 @@ public class AutoModeDriveForwardThenBackTD extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
     			robot.drive.tankDrive(0.75,0.75);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveBackwardDelay) {
     				robot.drive.tankDrive(0,0);

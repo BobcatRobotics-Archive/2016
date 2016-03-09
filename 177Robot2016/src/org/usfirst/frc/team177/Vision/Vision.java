@@ -51,6 +51,8 @@ public class Vision {
 	private Object lastCaptureLock = new Object();
 	private Object saveImageLock = new Object();
 	
+	VideoCapture videoCapture;
+
 	public Vision()
 	{
 		//load the opencv libraries
@@ -65,6 +67,7 @@ public class Vision {
 	    server = CameraServer.getInstance();
         server.setQuality(50);
 
+    	videoCapture = new VideoCapture();
 		
 		if(openCVisGood)
 		{			
@@ -206,7 +209,7 @@ public class Vision {
 		Mat IMask = new Mat();	
 					
 		// Only retain pixels where G > 200		
-		Core.inRange(Image, new Scalar(0, 200, 0), new Scalar(255, 255, 255), IMask);
+		Core.inRange(Image, new Scalar(0, 100, 0), new Scalar(255, 255, 255), IMask);
 	
 		// Convert to HSV and apply threshold		
 		/*Mat hsv = new Mat();
@@ -309,33 +312,18 @@ public class Vision {
 	}
 
 
+	
 	private class CaptureThread implements Runnable {
 		
 		private Mat lastFrame;
-		VideoCapture videoCapture;
+	
 	    
 		public CaptureThread()
 		{
-			videoCapture = new VideoCapture();
 		    lastFrame = new Mat();
 		    
 		    int retryCnt = 0;
-			while(!videoCapture.isOpened() && retryCnt++ < 5)
-			{
-				
-				try {
-					//use v4l2-ctl to turn off auto exposure
-					Runtime.getRuntime().exec(new String[]{"bash","-c","v4l2-ctl --set-ctrl=exposure_auto=1;v4l2-ctl --set-ctrl=exposure_absolute=5"});
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-
-				//attempt to open camera	
-				if(!videoCapture.open(cameraIndex))
-				{
-					System.out.println("Error Opening Camera");
-				}
-			}
+			
 			
 			Thread thisThread = new Thread(this);
 			//Lower the priority of this thread to try and prevent interfering with normal robot behavior 
@@ -374,10 +362,28 @@ public class Vision {
 		
 		void captureImage()
 		{
+			if(!videoCapture.isOpened())
+			{
+				try {
+					//use v4l2-ctl to turn off auto exposure
+					Runtime.getRuntime().exec(new String[]{"bash","-c","v4l2-ctl --set-ctrl=exposure_auto=1;v4l2-ctl --set-ctrl=exposure_absolute=5"});
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+
+				//attempt to open camera	
+				if(!videoCapture.open(cameraIndex))
+				{
+					System.out.println("Error Opening Camera");
+				}
+			}
+			
 			//if it opened, attempt to process
 			if(videoCapture.isOpened())
 			{			
-				videoCapture.read(lastFrame);						
+				synchronized(lastCaptureLock){
+					videoCapture.read(lastFrame);	
+				}
 			}
 		}
 	}
@@ -388,7 +394,7 @@ public class Vision {
 		{
 			Thread thisThread = new Thread(this);
 			//Lower the priority of this thread to try and prevent interfering with normal robot behavior 
-			thisThread.setPriority(Thread.NORM_PRIORITY-3);
+			thisThread.setPriority(Thread.NORM_PRIORITY-2);
 			thisThread.start();
 		}
 		
