@@ -5,6 +5,8 @@ package org.usfirst.frc.team177.auto;
 
 import org.usfirst.frc.team177.robot.*;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+
 public class AutoModeDriveForwardTransferDown extends AutoMode {
     
 	enum AutoStates {
@@ -33,7 +35,7 @@ public class AutoModeDriveForwardTransferDown extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.transferPneumatic.set(true);
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
     			robot.drive.tankDrive(0.75,0.75);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
     				robot.drive.tankDrive(0,0);

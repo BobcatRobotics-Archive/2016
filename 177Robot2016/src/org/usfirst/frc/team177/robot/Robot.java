@@ -16,6 +16,7 @@ import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -68,7 +69,7 @@ public class Robot extends IterativeRobot {
 	//SAFETY: At the end of the match both the latch and the pusher should be out
 	public Solenoid latchPneumatic = new Solenoid(1); //false = out
 	public DoubleSolenoid pusherPneumatic = new DoubleSolenoid(4,5); //false = out
-	public Solenoid transferPneumatic = new Solenoid(2); //false = out
+	public DoubleSolenoid transferPneumatic = new DoubleSolenoid(2,3); //false = out
 	public Solenoid shiftPneumatic = new Solenoid(0);
 	
     /** Digital Input **/
@@ -100,8 +101,8 @@ public class Robot extends IterativeRobot {
     
     //Controller Mapping
     //Controller
-    private static final int ButtonTransfer = 8;
-    private static final int ButtonSideRollers = 7;
+    private static final int ButtonTransfer = 7;
+    private static final int ButtonSideRollers = 8;
     //Right Joystick
     private static final int ButtonShift = 3;
     //Left Joystick
@@ -127,7 +128,7 @@ public class Robot extends IterativeRobot {
         chooser.addObject("Drive Forward(LowBar)", driveForwardTransferDown);
         chooser.addObject("Drive Forward(Obstacle)", driveForwardTransferUp);
         SmartDashboard.putData("Auto choices", chooser);
-        transferPneumatic.set(true);
+        transferPneumatic.set(Value.kReverse);
         
         catapult = new Catapult(latchPneumatic, pusherPneumatic);
     }
@@ -222,8 +223,12 @@ public class Robot extends IterativeRobot {
 		
 		SmartDashboard.putString("test", "yay");
 		
-    	transferPneumatic.set(operatorStick.getRawButton(ButtonSideRollers));
-		if(operatorStick.getRawButton(ButtonTransfer)) {
+    	if(operatorStick.getRawButton(7)) {
+    		transferPneumatic.set(Value.kReverse);
+    	} else {
+    		transferPneumatic.set(Value.kForward);
+    	}
+		if(operatorStick.getRawButton(ButtonSideRollers)) {
 			rollerSideMotor.set(1);
 		}
 		else {
