@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -49,7 +50,6 @@ public class Robot extends IterativeRobot {
 	private static final int MotorRollerSide = 7; //Side Roller 888
 	
 	private static final int MotorWinch = 5; 
-	private static final int MotorTape = 6;
 	/**Initialize Victors**/
 	Victor rearLeftMotor = new Victor(MotorDriveRL);
 	Victor frontLeftMotor = new Victor(MotorDriveFL);
@@ -60,8 +60,7 @@ public class Robot extends IterativeRobot {
 	Victor rollerTopMotor = new Victor(MotorRollerTop);
 	Victor rollerSideMotor = new Victor(MotorRollerSide);
 	
-	Victor winchMotor = new Victor(MotorWinch); //CIM
-	Victor tapeMotor = new Victor(MotorTape); //BAG
+	Victor winchMotor = new Victor(MotorWinch); //2 CIM's, y'd PWM
 	
 	/**Joysticks**/    
 	Joystick leftStick = new Joystick(0);
@@ -76,11 +75,11 @@ public class Robot extends IterativeRobot {
     
     /** Solenoids **/
 	//SAFETY: At the end of the match both the latch and the pusher should be out
-	public Solenoid latchPneumatic = new Solenoid(1); //false = out
-	public DoubleSolenoid pusherPneumatic = new DoubleSolenoid(4,5); //false = out
-	public DoubleSolenoid transferPneumatic = new DoubleSolenoid(2,3); //false = out
-	
 	public Solenoid shiftPneumatic = new Solenoid(0);
+    public Solenoid latchPneumatic = new Solenoid(1); //false = out
+    public DoubleSolenoid transferPneumatic = new DoubleSolenoid(2,3); //false = out
+    public DoubleSolenoid pusherPneumatic = new DoubleSolenoid(4,5); //false = out
+    public Solenoid climbPneumatic = new Solenoid(6);
 	
     /** Digital Input **/
     //DigitalInput ballIRSwitch = new DigitalInput(); //RIP IR, died 2/11/16 at the hands of Ulf's SuperAwesome piece of Lexan 
@@ -114,9 +113,9 @@ public class Robot extends IterativeRobot {
     long climberEventTime; 
     public enum climbStates {
            	Stowed,
-           	ResetTape,
-           	ShootTape,
-           	Climb
+           	ArmsOut,
+           	PickupDown,
+           	Climb,
            };
     private climbStates climbState = climbStates.Stowed;
     
@@ -125,7 +124,7 @@ public class Robot extends IterativeRobot {
     private static final int ButtonTransfer = 7;
     private static final int ButtonSideRollers = 8;
     private static final int ButtonFire = 1;
-    private static final int ButtonAimFire = 2; //James - confirm this is ok...  It is.
+    private static final int ButtonAimFire = 2; 
     //Right Joystick
     private static final int ButtonShift = 3;
     //Left Joystick
@@ -276,7 +275,7 @@ public class Robot extends IterativeRobot {
     	//Driving
     	double left = leftStick.getRawAxis(axisY);
 		double right = rightStick.getRawAxis(axisY);
-		//uncomment this line to disable driver input while auto aiming
+		//uncomment this line to disable driver input while auto aiming also put in the braces
 		//if (catapult.getState() != catapultStates.Aiming)
 		drive.tankDrive(left, right);
 		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));	
@@ -299,11 +298,6 @@ public class Robot extends IterativeRobot {
 		{
 			catapult.loop(operatorStick.getRawButton(ButtonFire), operatorStick.getRawButton(ButtonAimFire));
 		}
-		
-
-		//Climber OVERRIDE
-		
-      	
 		SmartDashboard.putNumber("Heading", locator.GetHeading());
 		SmartDashboard.putNumber("X", locator.GetX());
 		SmartDashboard.putNumber("Y", locator.GetY());
@@ -316,46 +310,35 @@ public class Robot extends IterativeRobot {
 			} else {
 				winchMotor.set(0);
 			}
-			tapeMotor.set(operatorStick.getRawButton(6)?0.5:0);
 		} else {
-			switch (climbState)
-			{
+			switch(climbState) {
 			case Stowed:
+				climbPneumatic.set(false);
 				winchMotor.set(0);
-				tapeMotor.set(0);
-
-				if(switchPanel.getRawButton(4)) {
-					climbState = climbStates.ShootTape;
+				if(switchPanel.getRawButton(4)) {climbState = climbStates.ArmsOut;}
+				break;
+			case ArmsOut:
+				if(climberEventTime == 0) {climberEventTime = System.currentTimeMillis();}
+				climbPneumatic.set(true);
+				winchMotor.set(0);
+				if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
+					climbState = climbStates.PickupDown;
 				}
 				break;
-			case ShootTape:
-				if(climberEventTime == 0) { 
-					climberEventTime = System.currentTimeMillis();
-				}
-				tapeMotor.set(0.75);		
-				if(System.currentTimeMillis() - climberEventTime > 750) {
-					tapeMotor.set(0);
+			case PickupDown:
+				if(climberEventTime ==0) {climberEventTime = System.currentTimeMillis();}
+				climbPneumatic.set(true);
+				winchMotor.set(0);
+				transferPneumatic.set(Value.kReverse); //down
+				if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
 					climbState = climbStates.Climb;
-					climberEventTime = 0;
 				}
 				break;
 			case Climb:
-				if(operatorStick.getRawButton(3)) {
-					tapeMotor.set(-0.5);
-					winchMotor.set(1);
-				} else {
-					tapeMotor.set(0);
-					winchMotor.set(0);
-				}
-
-				if(!switchPanel.getRawButton(4)) {
-					climbState = climbStates.Stowed;
-				}
+				climbPneumatic.set(false);
+				winchMotor.set(operatorStick.getRawAxis(3));
 				break;
 			default:
-				winchMotor.set(0);
-				tapeMotor.set(0);
-
 				break;
 			}
 		}
