@@ -125,6 +125,10 @@ public class Robot extends IterativeRobot {
     private static final int ButtonSideRollers = 8;
     private static final int ButtonFire = 1;
     private static final int ButtonAimFire = 2; 
+    private static final int ButtonOverrideToggle = 4;
+    private static final int ButtonOverrideWinchIn = 5;
+    private static final int ButtonOverrideWinchOut = 10;
+    
     //Right Joystick
     private static final int ButtonShift = 3;
     //Left Joystick
@@ -302,10 +306,10 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("X", locator.GetX());
 		SmartDashboard.putNumber("Y", locator.GetY());
 		
-		if (operatorStick.getRawButton(4)) {
-			if(operatorStick.getRawButton(5)) {
+		if (operatorStick.getRawButton(ButtonOverrideToggle)) {
+			if(operatorStick.getRawButton(ButtonOverrideWinchIn)) {
 				winchMotor.set(0.5);	
-			} else if (operatorStick.getRawButton(10)) {
+			} else if (operatorStick.getRawButton(ButtonOverrideWinchOut)) {
 				winchMotor.set(-0.5);
 			} else {
 				winchMotor.set(0);
