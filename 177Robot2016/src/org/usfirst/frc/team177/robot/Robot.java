@@ -36,7 +36,7 @@ public class Robot extends IterativeRobot {
     final String driveForwardTransferUpThenBack = "Drive Forward Then Back";
     final String driveForwardTransferUpTurnAndFire = "Drive Forward Up Then Turn And Fire";
     final String driveForwardFireDriveForward = "Drive Forward, Fire, Drive Forward";
-    //final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision";
+    //final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision"; VISION
     final String roughTerain = "Rough Terain";
     String autoSelected;
     SendableChooser chooser;
@@ -110,7 +110,7 @@ public class Robot extends IterativeRobot {
     public Catapult catapult;
     
     //vision
-    //public Vision vision;
+    //public Vision vision; VISION
     
     //State Machine Pickup
     pickupStates pickupState = pickupStates.BallAcquired;
@@ -165,7 +165,7 @@ public class Robot extends IterativeRobot {
         chooser.addObject("Drive To Forward LowBar Turn And Fire", driveForwardTransferUpTurnAndFire);
         chooser.addObject("Drive To Forward LowBar Then Back", driveForwardTransferUpThenBack);
         chooser.addObject("Drive Forward, Fire, Drive Forward", driveForwardFireDriveForward);
-        //chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision);
+        //chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision); VISION
         chooser.addObject(roughTerain, roughTerain);
         SmartDashboard.putData("Auto choices", chooser);
         
@@ -215,7 +215,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Y", locator.GetY());
     }
     
-    //long visionTestTimer = 0;
+    //long visionTestTimer = 0; VISION
     @Override
     public void disabledPeriodic() 
 	{	
@@ -225,7 +225,7 @@ public class Robot extends IterativeRobot {
 			SmartDashboard.putNumber("Target Bearing", bearing);
 			visionTestTimer = System.currentTimeMillis();
 		}
-	
+	*/
     	autoSelected = (String) chooser.getSelected();		
 
 		if(!autoSelected.equals(autoMode))
@@ -249,9 +249,10 @@ public class Robot extends IterativeRobot {
 	    		case driveForwardTransferUpTurnAndFire:
 	    			auto = new AutoModeDriveForwardTurnAndFire(this);
 	    			break;
-	    		case driveForwardTransferUpTurnAndFireWithVision:
+	    		/**case driveForwardTransferUpTurnAndFireWithVision:
 	    			auto = new AutoModeDriveForwardTurnAndFireWithVision(this);
 	    			break;
+	    		*/ //VISION
 	    		case driveForwardFireDriveForward:
 	    			auto = new AutoModeDriveForwardFireDriveForward(this);
 	    			break;
@@ -270,7 +271,6 @@ public class Robot extends IterativeRobot {
 		autoDelay = switchPanel.getX()*100;
 		SmartDashboard.putNumber("Auto Delay", autoDelay);
 		SmartDashboard.putString("Auto Mode", autoMode);
-		*/
 	}
     
     @SuppressWarnings("unused")
@@ -335,26 +335,32 @@ public class Robot extends IterativeRobot {
 			case Stowed:
 				climbPneumatic.set(false);
 				winchMotor.set(0);
-				if(switchPanel.getRawButton(4)) {climbState = climbStates.ArmsOut;}
+				if(switchPanel.getRawButton(4)) {
+					climbState = climbStates.ArmsOut;
+				}
 				break;
 			case ArmsOut:
-				if(climberEventTime == 0) {climberEventTime = System.currentTimeMillis();}
+				if(climberEventTime == 0) { 
+					climberEventTime = System.currentTimeMillis();
+				}
 				climbPneumatic.set(true);
 				winchMotor.set(0);
-				//if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
-				if(operatorStick.getRawButton(4)) {	
-					climbState = climbStates.PickupDown;}
-				//}
+				if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
+					climbState = climbStates.PickupDown;
+					climberEventTime = 0;
+				}
 				break;
 			case PickupDown:
-				if(climberEventTime ==0) {climberEventTime = System.currentTimeMillis();}
+				if(climberEventTime ==0) {
+					climberEventTime = System.currentTimeMillis();
+				}
 				climbPneumatic.set(true);
 				winchMotor.set(0);
 				transferPneumatic.set(DoubleSolenoid.Value.kReverse); //down
-				//if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
-				if(operatorStick.getRawButton(4)) {
-					climbState = climbStates.Climb;}
-				//}
+				if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
+					climbState = climbStates.Climb;
+					climberEventTime = 0;
+				}
 				break;
 			case Climb:
 				climbPneumatic.set(false);
