@@ -2,12 +2,13 @@
 package org.usfirst.frc.team177.robot;
 
 //disable vision until we're ready to try it
-import org.usfirst.frc.team177.Vision.Vision;
+//import org.usfirst.frc.team177.Vision.Vision;
 import org.usfirst.frc.team177.auto.*;
 import org.usfirst.frc.team177.lib.Locator;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Victor;
@@ -35,7 +36,7 @@ public class Robot extends IterativeRobot {
     final String driveForwardTransferUpThenBack = "Drive Forward Then Back";
     final String driveForwardTransferUpTurnAndFire = "Drive Forward Up Then Turn And Fire";
     final String driveForwardFireDriveForward = "Drive Forward, Fire, Drive Forward";
-    final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision";
+    //final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision";
     final String roughTerain = "Rough Terain";
     String autoSelected;
     SendableChooser chooser;
@@ -49,7 +50,7 @@ public class Robot extends IterativeRobot {
 	private static final int MotorRollerTop = 4; //Top Roller 888
 	private static final int MotorRollerSide = 7; //Side Roller 888
 	
-	private static final int MotorWinch = 5; 
+	private static final int MotorWinch = 5;//2 cims, 5 and 6
 	/**Initialize Victors**/
 	Victor rearLeftMotor = new Victor(MotorDriveRL);
 	Victor frontLeftMotor = new Victor(MotorDriveFL);
@@ -92,6 +93,11 @@ public class Robot extends IterativeRobot {
     /** Analog Inputs **/
     private static final int GyroAnalogInput = 0;   
     
+    /**Relay Constants**/
+    //private static final int RelayFlashLight = 0;
+    
+    /**Relays**/
+    //Relay FlashLightRelay = new Relay(RelayFlashLight);
     
     enum pickupStates {
     	BallAcquired,
@@ -104,7 +110,7 @@ public class Robot extends IterativeRobot {
     public Catapult catapult;
     
     //vision
-    public Vision vision;
+    //public Vision vision;
     
     //State Machine Pickup
     pickupStates pickupState = pickupStates.BallAcquired;
@@ -121,12 +127,13 @@ public class Robot extends IterativeRobot {
     
     //Controller Mapping
     //Controller
-    private static final int ButtonTransfer = 7;
-    private static final int ButtonSideRollers = 8;
     private static final int ButtonFire = 1;
     private static final int ButtonAimFire = 2; 
     private static final int ButtonOverrideToggle = 4;
     private static final int ButtonOverrideWinchIn = 5;
+    private static final int ButtonFlashlight = 6;
+    private static final int ButtonTransfer = 7;
+    private static final int ButtonSideRollers = 8;
     private static final int ButtonOverrideWinchOut = 10;
     
     //Right Joystick
@@ -158,7 +165,7 @@ public class Robot extends IterativeRobot {
         chooser.addObject("Drive To Forward LowBar Turn And Fire", driveForwardTransferUpTurnAndFire);
         chooser.addObject("Drive To Forward LowBar Then Back", driveForwardTransferUpThenBack);
         chooser.addObject("Drive Forward, Fire, Drive Forward", driveForwardFireDriveForward);
-        chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision);
+        //chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision);
         chooser.addObject(roughTerain, roughTerain);
         SmartDashboard.putData("Auto choices", chooser);
         
@@ -167,7 +174,7 @@ public class Robot extends IterativeRobot {
         
         locator.start();
 
-        vision = new Vision();
+        //vision = new Vision();
 
         climbState = climbStates.Stowed;
     }
@@ -208,11 +215,12 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Y", locator.GetY());
     }
     
-    long visionTestTimer = 0;
+    //long visionTestTimer = 0;
     @Override
     public void disabledPeriodic() 
 	{	
-		if(visionTestTimer == 0 || System.currentTimeMillis() - visionTestTimer > 15000) {
+		/**
+    	if(visionTestTimer == 0 || System.currentTimeMillis() - visionTestTimer > 15000) {
 			double bearing = vision.getBearing();
 			SmartDashboard.putNumber("Target Bearing", bearing);
 			visionTestTimer = System.currentTimeMillis();
@@ -262,7 +270,7 @@ public class Robot extends IterativeRobot {
 		autoDelay = switchPanel.getX()*100;
 		SmartDashboard.putNumber("Auto Delay", autoDelay);
 		SmartDashboard.putString("Auto Mode", autoMode);
-		
+		*/
 	}
     
     @SuppressWarnings("unused")
@@ -282,16 +290,19 @@ public class Robot extends IterativeRobot {
 		//uncomment this line to disable driver input while auto aiming also put in the braces
 		//if (catapult.getState() != catapultStates.Aiming)
 		drive.tankDrive(left, right);
+		
+		//General Controls
 		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));	
     	transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+    	rollerSideMotor.set(operatorStick.getRawButton(ButtonSideRollers) ? -1 : 0);
     	if(operatorStick.getRawButton(ButtonSideRollers)) {
-			rollerSideMotor.set(-1);
-		}
-		else {
-			rollerSideMotor.set(0);
-		}
+    		rollerSideMotor.set(1);
+    	} else {
+    		rollerSideMotor.set(0);
+    	}
 		rollerTopMotor.set(operatorStick.getRawAxis(1) * -1); //Left Stick, y axis
-	
+		//FlashLightRelay.set(operatorStick.getRawButton(ButtonFlashlight) ? Relay.Value.kOn : Relay.Value.kOff);
+		//Catapult Override Control
 		if(switchPanel.getRawButton(1))
 		{
 			latchPneumatic.set(switchPanel.getRawButton(2));
@@ -302,16 +313,21 @@ public class Robot extends IterativeRobot {
 		{
 			catapult.loop(operatorStick.getRawButton(ButtonFire), operatorStick.getRawButton(ButtonAimFire));
 		}
+		
+		//Locator
 		SmartDashboard.putNumber("Heading", locator.GetHeading());
 		SmartDashboard.putNumber("X", locator.GetX());
 		SmartDashboard.putNumber("Y", locator.GetY());
 		
+		//Climbing Override Control
 		if (operatorStick.getRawButton(ButtonOverrideToggle)) {
+			if(operatorStick.getRawButton(ButtonOverrideWinchOut)) {
+				climbPneumatic.set(true);
+			}//DELETE THIS
 			if(operatorStick.getRawButton(ButtonOverrideWinchIn)) {
-				winchMotor.set(0.5);	
-			} else if (operatorStick.getRawButton(ButtonOverrideWinchOut)) {
-				winchMotor.set(-0.5);
-			} else {
+				winchMotor.set(1);	
+			} 
+			else {
 				winchMotor.set(0);
 			}
 		} else {
@@ -325,18 +341,20 @@ public class Robot extends IterativeRobot {
 				if(climberEventTime == 0) {climberEventTime = System.currentTimeMillis();}
 				climbPneumatic.set(true);
 				winchMotor.set(0);
-				if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
-					climbState = climbStates.PickupDown;
-				}
+				//if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
+				if(operatorStick.getRawButton(4)) {	
+					climbState = climbStates.PickupDown;}
+				//}
 				break;
 			case PickupDown:
 				if(climberEventTime ==0) {climberEventTime = System.currentTimeMillis();}
 				climbPneumatic.set(true);
 				winchMotor.set(0);
-				transferPneumatic.set(Value.kReverse); //down
-				if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
-					climbState = climbStates.Climb;
-				}
+				transferPneumatic.set(DoubleSolenoid.Value.kReverse); //down
+				//if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
+				if(operatorStick.getRawButton(4)) {
+					climbState = climbStates.Climb;}
+				//}
 				break;
 			case Climb:
 				climbPneumatic.set(false);

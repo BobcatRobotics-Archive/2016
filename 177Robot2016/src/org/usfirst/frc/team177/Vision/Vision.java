@@ -22,8 +22,8 @@ import com.ni.vision.VisionException;
 import edu.wpi.first.wpilibj.CameraServer;
 
 
-public class Vision {
-	
+//public class Vision {
+	/**
 	//used to prevent crashing if loaded on a controller without OpenCV 
 	private boolean openCVisGood = true;
 		
@@ -180,7 +180,7 @@ public class Vision {
 			}
 		}		
 	}
-	*/
+	
 
 	boolean UpdateAnalysis(boolean saveImage)
 	{
@@ -216,7 +216,8 @@ public class Vision {
 		Imgproc.medianBlur(image, image, 3);
 		Imgproc.cvtColor(image, hsv, Imgproc.COLOR_BGR2HSV);
 		Core.inRange(hsv, new Scalar(0, 0, 230), new Scalar(255, 255, 255), IMask);
-*/
+	 	*/
+		/**
 		// Find contours to identify blobs
 		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();		 
 		Imgproc.findContours(IMask, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
@@ -440,3 +441,4 @@ public class Vision {
 		}		
 	}	
 }
+*/
