@@ -1,7 +1,7 @@
 
 package org.usfirst.frc.team177.robot;
 
-//disable vision until we're ready to try it
+//disable vision until we're ready to try it VISION
 //import org.usfirst.frc.team177.Vision.Vision;
 import org.usfirst.frc.team177.auto.*;
 import org.usfirst.frc.team177.lib.Locator;

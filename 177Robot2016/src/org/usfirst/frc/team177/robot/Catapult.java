@@ -114,7 +114,7 @@ public class Catapult {
 				catapultState = catapultStates.Aiming;
 			}						
 			break;
-		/**case Aiming:
+		/**case Aiming: VISION
 			if(lastShooterEventTime == 0) { 
 				//just entered state, figure out where we're turning to
 				double bearing = robot.vision.getBearing();
