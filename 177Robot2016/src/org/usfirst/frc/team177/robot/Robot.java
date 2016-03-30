@@ -2,7 +2,7 @@
 package org.usfirst.frc.team177.robot;
 
 //disable vision until we're ready to try it VISION
-//import org.usfirst.frc.team177.Vision.Vision;
+import org.usfirst.frc.team177.Vision.Vision;
 import org.usfirst.frc.team177.auto.*;
 import org.usfirst.frc.team177.lib.Locator;
 
@@ -36,7 +36,7 @@ public class Robot extends IterativeRobot {
     final String driveForwardTransferUpThenBack = "Drive Forward Then Back";
     final String driveForwardTransferUpTurnAndFire = "Drive Forward Up Then Turn And Fire";
     final String driveForwardFireDriveForward = "Drive Forward, Fire, Drive Forward";
-    //final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision"; VISION
+    final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision"; 
     final String roughTerain = "Rough Terain";
     String autoSelected;
     SendableChooser chooser;
@@ -110,7 +110,7 @@ public class Robot extends IterativeRobot {
     public Catapult catapult;
     
     //vision
-    //public Vision vision; VISION
+    public Vision vision; 
     
     //State Machine Pickup
     pickupStates pickupState = pickupStates.BallAcquired;
@@ -165,7 +165,7 @@ public class Robot extends IterativeRobot {
         chooser.addObject("Drive To Forward LowBar Turn And Fire", driveForwardTransferUpTurnAndFire);
         chooser.addObject("Drive To Forward LowBar Then Back", driveForwardTransferUpThenBack);
         chooser.addObject("Drive Forward, Fire, Drive Forward", driveForwardFireDriveForward);
-        //chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision); VISION
+        chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision); 
         chooser.addObject(roughTerain, roughTerain);
         SmartDashboard.putData("Auto choices", chooser);
         
@@ -174,7 +174,7 @@ public class Robot extends IterativeRobot {
         
         locator.start();
 
-        //vision = new Vision();
+        vision = new Vision();
 
         climbState = climbStates.Stowed;
     }
@@ -215,7 +215,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Y", locator.GetY());
     }
     
-    //long visionTestTimer = 0; VISION
+    long visionTestTimer = 0; 
     @Override
     public void disabledPeriodic() 
 	{	
@@ -249,10 +249,9 @@ public class Robot extends IterativeRobot {
 	    		case driveForwardTransferUpTurnAndFire:
 	    			auto = new AutoModeDriveForwardTurnAndFire(this);
 	    			break;
-	    		/**case driveForwardTransferUpTurnAndFireWithVision:
+	    		case driveForwardTransferUpTurnAndFireWithVision:
 	    			auto = new AutoModeDriveForwardTurnAndFireWithVision(this);
 	    			break;
-	    		*/ //VISION
 	    		case driveForwardFireDriveForward:
 	    			auto = new AutoModeDriveForwardFireDriveForward(this);
 	    			break;
