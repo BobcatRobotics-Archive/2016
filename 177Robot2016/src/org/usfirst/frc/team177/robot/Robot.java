@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -286,6 +287,7 @@ public class Robot extends IterativeRobot {
     	catapult.setState(catapultStates.BallsIn);
     	pickupStates pickupState = pickupStates.BallAcquired;
     	transferPneumatic.set(DoubleSolenoid.Value.kReverse);
+    	 climbState = climbStates.Stowed;
     }
     
     /**
@@ -301,8 +303,10 @@ public class Robot extends IterativeRobot {
 		
 		//General Controls
 		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));	
-    	transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-    	rollerSideMotor.set(operatorStick.getRawButton(ButtonSideRollers) ? -1 : 0);
+    	if (!(climbState == climbStates.Climb)) {  //Ok I do not know how to make this better.  I want to be able to control the pickup freely unless we are in the climb state of the climb state machine. Dave plz advise
+			transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+		}
+		rollerSideMotor.set(operatorStick.getRawButton(ButtonSideRollers) ? -1 : 0);
     	if(operatorStick.getRawButton(ButtonSideRollers)) {
     		rollerSideMotor.set(1);
     	} else {
@@ -335,12 +339,7 @@ public class Robot extends IterativeRobot {
 			else {
 				climbPneumatic.set(false);
 			}
-			if(operatorStick.getRawButton(ButtonOverrideWinchIn)) {
-				winchMotor.set(1);	
-			} 
-			else {
-				winchMotor.set(0);
-			}
+			winchMotor.set(operatorStick.getRawAxis(3) > 0 ? Math.abs(operatorStick.getRawAxis(3)) : operatorStick.getRawAxis(3) / 10);	
 		} else {
 			switch(climbState) {
 			case Stowed:
@@ -356,26 +355,15 @@ public class Robot extends IterativeRobot {
 				}
 				climbPneumatic.set(true);
 				winchMotor.set(0);
-				if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
-					climbState = climbStates.PickupDown;
-					climberEventTime = 0;
-				}
-				break;
-			case PickupDown:
-				if(climberEventTime ==0) {
-					climberEventTime = System.currentTimeMillis();
-				}
-				climbPneumatic.set(true);
-				winchMotor.set(0);
-				transferPneumatic.set(DoubleSolenoid.Value.kReverse); //down
-				if(System.currentTimeMillis() - climberEventTime > 500) { //Magic Delay
+				if(System.currentTimeMillis() - climberEventTime > 1000) { //Magic Delay
 					climbState = climbStates.Climb;
 					climberEventTime = 0;
 				}
-				break;
+				break;	
 			case Climb:
 				climbPneumatic.set(false);
-				winchMotor.set(operatorStick.getRawAxis(3) > 0 ? Math.abs(operatorStick.getRawAxis(3)) : operatorStick.getRawAxis(3) / 10);
+				winchMotor.set(Math.abs(operatorStick.getRawAxis(3)));
+				transferPneumatic.set(Value.kForward);
 				break;
 			default:
 				break;
