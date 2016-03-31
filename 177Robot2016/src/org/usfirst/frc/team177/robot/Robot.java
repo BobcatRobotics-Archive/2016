@@ -375,7 +375,7 @@ public class Robot extends IterativeRobot {
 				break;
 			case Climb:
 				climbPneumatic.set(false);
-				winchMotor.set(operatorStick.getRawAxis(3));
+				winchMotor.set(operatorStick.getRawAxis(3) > 0 ? Math.abs(operatorStick.getRawAxis(3)) : operatorStick.getRawAxis(3) / 10);
 				break;
 			default:
 				break;
