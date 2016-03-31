@@ -331,7 +331,10 @@ public class Robot extends IterativeRobot {
 		if (operatorStick.getRawButton(ButtonOverrideToggle)) {
 			if(operatorStick.getRawButton(ButtonOverrideWinchOut)) {
 				climbPneumatic.set(true);
-			}//DELETE THIS
+			}
+			else {
+				climbPneumatic.set(false);
+			}
 			if(operatorStick.getRawButton(ButtonOverrideWinchIn)) {
 				winchMotor.set(1);	
 			} 
