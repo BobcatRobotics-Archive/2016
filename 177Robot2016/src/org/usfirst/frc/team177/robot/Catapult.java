@@ -27,8 +27,9 @@ public class Catapult {
     private catapultStates catapultState = catapultStates.PreparingToFire;
     private static final double stateDelay = 1000; //ms
     private static final double aimTimeout = 5000; //ms   
-    private static final double aimThreshold = 2; //+/- 2 degrees == on target
-    private static final double turnSpeed = 1;
+    private static final double aimThreshold = 0.5; //+/- 1 degrees == on target
+    private static final double turnSpeed = 0.75;
+    private static final double bearingFudgeFactor = -1;
     		
     private long lastShooterEventTime = 0;
     private double targetHeading = 0;
@@ -114,7 +115,7 @@ public class Catapult {
 				catapultState = catapultStates.Aiming;
 			}						
 			break;
-		/**case Aiming: VISION
+		case Aiming:
 			if(lastShooterEventTime == 0) { 
 				//just entered state, figure out where we're turning to
 				double bearing = robot.vision.getBearing();
@@ -129,7 +130,7 @@ public class Catapult {
 				else
 				{
 					double heading = robot.locator.GetHeading();
-					targetHeading = heading+bearing;
+					targetHeading = heading+bearing+bearingFudgeFactor;
 					//wrap to 0 - 360 range
 					while (targetHeading < 0) { targetHeading += 360.0; }					
 					while (targetHeading >= 360) { targetHeading -= 360.0; }					
@@ -159,6 +160,7 @@ public class Catapult {
 				{
 					SmartDashboard.putString("Aim Sequence", "Aim Successful");
 					//Fire!
+					//Change this to auto fire.
 					//catapultState = catapultStates.NoBall;
 					catapultState = catapultStates.ReadyToFire;
 					
@@ -175,7 +177,7 @@ public class Catapult {
 				lastShooterEventTime = 0;
 			}			
 		
-			break; */
+			break;
 		default:
 			break;
 		}

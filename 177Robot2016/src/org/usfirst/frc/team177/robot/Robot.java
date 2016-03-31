@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -36,7 +35,9 @@ public class Robot extends IterativeRobot {
     final String driveForwardTransferUpThenBack = "Drive Forward Then Back";
     final String driveForwardTransferUpTurnAndFire = "Drive Forward Up Then Turn And Fire";
     final String driveForwardFireDriveForward = "Drive Forward, Fire, Drive Forward";
-    final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision"; 
+    final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision";
+    final String driveForwardOverObsticalWithVision = "Drive Forward Over Obstical With Vision";
+    final String chevalDeFrise = "Cheval De Frise";
     final String roughTerain = "Rough Terain";
     String autoSelected;
     SendableChooser chooser;
@@ -165,7 +166,9 @@ public class Robot extends IterativeRobot {
         chooser.addObject("Drive To Forward LowBar Turn And Fire", driveForwardTransferUpTurnAndFire);
         chooser.addObject("Drive To Forward LowBar Then Back", driveForwardTransferUpThenBack);
         chooser.addObject("Drive Forward, Fire, Drive Forward", driveForwardFireDriveForward);
-        chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision); 
+        chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision);
+        chooser.addObject(driveForwardOverObsticalWithVision, driveForwardOverObsticalWithVision);
+        chooser.addObject(chevalDeFrise, chevalDeFrise);
         chooser.addObject(roughTerain, roughTerain);
         SmartDashboard.putData("Auto choices", chooser);
         
@@ -240,6 +243,9 @@ public class Robot extends IterativeRobot {
 	    		case driveForwardTransferUpShort:
 	    			auto = new AutoModeDriveForwardTransferUp(this, 4000);
 	    			break;
+	    		case driveForwardOverObsticalWithVision:
+	    			auto = new AutoModeDriveObsticalWithVision(this, 2000);
+	    			break;
 	    		case driveToForwardTransferDown:
 	    			auto = new AutoModeDriveToTransferDown(this);
 	    			break;
@@ -254,6 +260,9 @@ public class Robot extends IterativeRobot {
 	    			break;
 	    		case driveForwardFireDriveForward:
 	    			auto = new AutoModeDriveForwardFireDriveForward(this);
+	    			break;
+	    		case chevalDeFrise:
+	    			auto = new AutoModeChevalDeFrise(this);
 	    			break;
 	    		case roughTerain:
 	    			auto = new AutoModeRoughTerain(this, 4000);
@@ -302,13 +311,13 @@ public class Robot extends IterativeRobot {
 		rollerTopMotor.set(operatorStick.getRawAxis(1) * -1); //Left Stick, y axis
 		//FlashLightRelay.set(operatorStick.getRawButton(ButtonFlashlight) ? Relay.Value.kOn : Relay.Value.kOff);
 		//Catapult Override Control
-		if(switchPanel.getRawButton(1))
+		/*  DAS if(switchPanel.getRawButton(1))
 		{
 			latchPneumatic.set(switchPanel.getRawButton(2));
 			pusherPneumatic.set(switchPanel.getRawButton(3)?DoubleSolenoid.Value.kForward:DoubleSolenoid.Value.kReverse);
 			catapult.setState(catapultStates.BallsIn);			
 		}
-		else
+		else*/
 		{
 			catapult.loop(operatorStick.getRawButton(ButtonFire), operatorStick.getRawButton(ButtonAimFire));
 		}

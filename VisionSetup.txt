@@ -10,12 +10,19 @@ Offline:
 python3 installer.py install-opkg opencv3-java
 python3 installer.py install-opkg v4l-utils
 
+//This was required on practice bot
+ssh admin@172.22.11.2
+cp /usr/local/share/OpenCV/java/libopencv_java310.so /usr/local/lib
+
+
 
 On PC
 Add "<var name="classpath" value="${classpath}:/path/to/opencv-310.jar" />" to build.xml
 
 System.load("/usr/local/lib/lib_OpenCV/java/opencv_java310.so");
 System.load("/usr/local/lib/libopencv_java310.so");
+System.load("/usr/local/share/OpenCV/java/libopencv_java310.so"); 
+
 
 Reference:
 https://github.com/robotpy/roborio-opencv

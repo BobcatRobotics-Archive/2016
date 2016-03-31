@@ -67,10 +67,11 @@ public class Vision {
 	    server = CameraServer.getInstance();
         server.setQuality(50);
 
-    	videoCapture = new VideoCapture();
 		
 		if(openCVisGood)
-		{			
+		{	
+	    	videoCapture = new VideoCapture();
+	    	
 			captureThread = new CaptureThread();
 			//  proccessThread = new ProcessThread();
 			dsThread = new DSThread();
@@ -102,7 +103,7 @@ public class Vision {
 		{
 			//if there is no opencv, try sending the camera directly to the DS
 	        //the camera name (ex "cam0") can be found through the roborio web interface
-	        server.startAutomaticCapture("cam0");
+	        server.startAutomaticCapture("cam5"); //changed to cam5 on PB
 	        
 	        //Initialize unused threads to null to keep compiler happy
 	        captureThread = null;
@@ -273,8 +274,8 @@ public class Vision {
 		if(!openCVisGood) return false;
 					
 		// Constants (CALIBRATE ME!)
-		final int X0 = 260; // inches (distance from target in sample image)
-		final int P0 = 32;    // pixels (height in pixels of sample image);
+		final int X0 = 174; //260; // inches (distance from target in sample image)
+		final int P0 = 44;  //32;    // pixels (height in pixels of sample image);
 		
 		Rect target = findTarget(frame);
 		
@@ -289,8 +290,10 @@ public class Vision {
 			int imageCenterX = frame.cols() / 2;
 			int deltaX  = targetCenterX - imageCenterX;
 
-			double deltaTheta = Math.atan(deltaX / ((X0 / (double) P0) * target.height));
-			bearing = deltaTheta * (180.0 / Math.PI);
+			//double deltaTheta = Math.atan(deltaX / ((X0 / (double) P0) * target.height));
+			//bearing = deltaTheta * (180.0 / Math.PI);
+			
+			bearing = (61.0f/frame.cols())* (double)deltaX; //based on 61 degree field of view.
 		}
 		System.out.println("bearing: " + bearing);		
 		
@@ -367,7 +370,8 @@ public class Vision {
 			{
 				try {
 					//use v4l2-ctl to turn off auto exposure
-					Runtime.getRuntime().exec(new String[]{"bash","-c","v4l2-ctl --set-ctrl=exposure_auto=1;v4l2-ctl --set-ctrl=exposure_absolute=5"});
+					//min=5 max=20000 step=1 default=156 value=5
+					Runtime.getRuntime().exec(new String[]{"bash","-c","v4l2-ctl --set-ctrl=exposure_auto=1;v4l2-ctl --set-ctrl=exposure_absolute=20"});
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
