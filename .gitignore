@@ -24,3 +24,4 @@ local.properties
 build/
 177Robot2016/build/org/usfirst/frc/team177/robot/Robot$pickupStates.class
 177Robot2016/build/*
+*.jar
