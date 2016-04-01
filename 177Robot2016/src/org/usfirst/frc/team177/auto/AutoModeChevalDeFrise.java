@@ -1,6 +1,5 @@
 package org.usfirst.frc.team177.auto;
 
-import org.usfirst.frc.team177.auto.AutoModeDriveForwardTurnAndFireWithVision.AutoStates;
 import org.usfirst.frc.team177.robot.*;
 import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
@@ -28,9 +27,12 @@ public class AutoModeChevalDeFrise extends AutoMode {
 
     boolean fireNow = false;
     boolean aimNow = false;
+    
+    boolean fireAfterCrossing;
 	
-	public AutoModeChevalDeFrise(Robot robot) {
+	public AutoModeChevalDeFrise(Robot robot, boolean fireAfterCrossing) {
 		super(robot);
+		this.fireAfterCrossing = fireAfterCrossing;
 		System.out.println("AutoModeChevalDeFrise Constructor");
 	}
 	
@@ -38,7 +40,7 @@ public class AutoModeChevalDeFrise extends AutoMode {
 		lastEventTime = 0;
 		state = AutoStates.DriveForward;
 		driveCount = 1;
-		robot.shiftPneumatic.set(false);
+		robot.shiftPneumatic.set(false); //Low Gear
 	}
 	
 	public void autoPeriodic() {
@@ -61,8 +63,12 @@ public class AutoModeChevalDeFrise extends AutoMode {
 				if (System.currentTimeMillis() - lastEventTime > secondDriveForwardDelay) {
 					robot.drive.tankDrive(0,0);
 					lastEventTime = 0;
-					robot.shiftPneumatic.set(true);
-					state = AutoStates.Pause;
+					robot.shiftPneumatic.set(true); // High gear
+					if (fireAfterCrossing) {
+						state = AutoStates.Pause;
+					} else {
+						state = AutoStates.Stop;
+					}
 				}
 			}
 			break;

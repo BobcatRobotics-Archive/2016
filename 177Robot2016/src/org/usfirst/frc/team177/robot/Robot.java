@@ -28,17 +28,18 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
  */
 public class Robot extends IterativeRobot {
     final String doNothing = "Do Nothing";
-    final String driveForwardTransferDown = "Drive Forward Transfer Down";
-    final String driveForwardTransferUp = "Drive Forward Transfer Up";
-    final String driveForwardTransferUpShort = "Drive Forward Transfer Up Short";
-    final String driveToForwardTransferDown = "Drive To Forward Transfer Down";
-    final String driveForwardTransferUpThenBack = "Drive Forward Then Back";
-    final String driveForwardTransferUpTurnAndFire = "Drive Forward Up Then Turn And Fire";
-    final String driveForwardFireDriveForward = "Drive Forward, Fire, Drive Forward";
-    final String driveForwardTransferUpTurnAndFireWithVision = "Drive Forward Up Then Turn And Fire With Vision";
-    final String driveForwardOverObsticalWithVision = "Drive Forward Over Obstical With Vision";
-    final String chevalDeFrise = "Cheval De Frise";
-    final String roughTerain = "Rough Terain";
+    
+    final String driveForwardTransferUp = "Drive Forward(Obstacle)";
+    final String driveForwardTransferUpShort = "Drive Forward(Obstacle)Short";
+    final String driveForwardOverObsticalWithVision = "Drive Forward (Obstacle) With Vision";
+    final String driveForwardOverObsticalWithVisionShort = "Drive Forward (Obstacle) With Vision Short";
+    
+    final String lowBar = "Low Bar Turn And Fire";
+    final String lowBarWithVision = "Low Bar Turn And Fire With Vision";
+    
+    final String chevalDeFrise = "Cheval De Frise No Fire";
+    final String chevalDeFriseFire = "Cheval De Frise Fire With Vision";
+  
     String autoSelected;
     SendableChooser chooser;
 	    
@@ -158,18 +159,16 @@ public class Robot extends IterativeRobot {
      */
     public void robotInit() {
         chooser = new SendableChooser();
-        chooser.addDefault("Do Nothing", doNothing);
-        chooser.addObject("Drive Forward(LowBar)", driveForwardTransferDown);
-        chooser.addObject("Drive Forward(Obstacle)", driveForwardTransferUp);
-        chooser.addObject("Drive Forward(Obstacle) Short",driveForwardTransferUpShort);
-        chooser.addObject("Drive To Forward LowBar", driveToForwardTransferDown);
-        chooser.addObject("Drive To Forward LowBar Turn And Fire", driveForwardTransferUpTurnAndFire);
-        chooser.addObject("Drive To Forward LowBar Then Back", driveForwardTransferUpThenBack);
-        chooser.addObject("Drive Forward, Fire, Drive Forward", driveForwardFireDriveForward);
-        chooser.addObject(driveForwardTransferUpTurnAndFireWithVision, driveForwardTransferUpTurnAndFireWithVision);
-        chooser.addObject(driveForwardOverObsticalWithVision, driveForwardOverObsticalWithVision);
-        chooser.addObject(chevalDeFrise, chevalDeFrise);
-        chooser.addObject(roughTerain, roughTerain);
+        chooser.addDefault(doNothing, 								doNothing);
+        chooser.addObject(driveForwardTransferUp, 					driveForwardTransferUp);
+        chooser.addObject(driveForwardTransferUpShort,				driveForwardTransferUpShort);
+        chooser.addObject(driveForwardOverObsticalWithVision,		driveForwardOverObsticalWithVision);
+        chooser.addObject(driveForwardOverObsticalWithVisionShort, 	driveForwardOverObsticalWithVisionShort);
+        chooser.addObject(lowBar, 									lowBar);
+        chooser.addObject(lowBarWithVision, 						lowBarWithVision);
+        chooser.addObject(chevalDeFrise, 							chevalDeFrise);
+        chooser.addObject(chevalDeFriseFire, 						chevalDeFriseFire);
+        
         SmartDashboard.putData("Auto choices", chooser);
         
         
@@ -234,9 +233,6 @@ public class Robot extends IterativeRobot {
 		if(!autoSelected.equals(autoMode))
 		{
 			switch(autoSelected) {
-	    		case driveForwardTransferDown:
-	    			auto = new AutoModeDriveForwardTransferDown(this);
-	    			break;
 	    		case driveForwardTransferUp:
 	    			auto = new AutoModeDriveForwardTransferUp(this, 5000);
 	    			break;
@@ -244,28 +240,22 @@ public class Robot extends IterativeRobot {
 	    			auto = new AutoModeDriveForwardTransferUp(this, 4000);
 	    			break;
 	    		case driveForwardOverObsticalWithVision:
+	    			auto = new AutoModeDriveObsticalWithVision(this, 3000);
+	    			break;
+	    		case driveForwardOverObsticalWithVisionShort:
 	    			auto = new AutoModeDriveObsticalWithVision(this, 2000);
 	    			break;
-	    		case driveToForwardTransferDown:
-	    			auto = new AutoModeDriveToTransferDown(this);
-	    			break;
-	    		case driveForwardTransferUpThenBack:
-	    			auto = new AutoModeDriveForwardThenBackTD(this);
-	    			break;
-	    		case driveForwardTransferUpTurnAndFire:
+	    		case lowBar:
 	    			auto = new AutoModeDriveForwardTurnAndFire(this);
 	    			break;
-	    		case driveForwardTransferUpTurnAndFireWithVision:
+	    		case lowBarWithVision:
 	    			auto = new AutoModeDriveForwardTurnAndFireWithVision(this);
 	    			break;
-	    		case driveForwardFireDriveForward:
-	    			auto = new AutoModeDriveForwardFireDriveForward(this);
-	    			break;
 	    		case chevalDeFrise:
-	    			auto = new AutoModeChevalDeFrise(this);
+	    			auto = new AutoModeChevalDeFrise(this, false);
 	    			break;
-	    		case roughTerain:
-	    			auto = new AutoModeRoughTerain(this, 4000);
+	    		case chevalDeFriseFire:
+	    			auto = new AutoModeChevalDeFrise(this, true);
 	    			break;
 	    		case doNothing:
 	        	default:

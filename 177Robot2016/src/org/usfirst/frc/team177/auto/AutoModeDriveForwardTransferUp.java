@@ -27,6 +27,7 @@ public class AutoModeDriveForwardTransferUp extends AutoMode {
     public void autoInit() {    	
     	state = AutoStates.DriveForward;   
     	lastDriveForwardEventTime = 0;
+    	robot.shiftPneumatic.set(false); // Low gear, consider changing to high and tweaking timing
     }
 
     public void autoPeriodic() {

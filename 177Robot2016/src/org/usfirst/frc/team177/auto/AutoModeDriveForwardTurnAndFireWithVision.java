@@ -45,7 +45,7 @@ public class AutoModeDriveForwardTurnAndFireWithVision extends AutoMode {
     	fireNow = false;
     	lastDriveForwardEventTime = 0;
     	robot.locator.Reset();
-    	robot.shiftPneumatic.set(false);
+    	robot.shiftPneumatic.set(false); //low gear
     }
 
     public void autoPeriodic() {
@@ -78,7 +78,7 @@ public class AutoModeDriveForwardTurnAndFireWithVision extends AutoMode {
     		case Pause:
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
-    				robot.shiftPneumatic.set(true);
+    				robot.shiftPneumatic.set(true); //high gear
     			}		
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > pauseDelay) {
     				robot.drive.tankDrive(0,0);
@@ -137,7 +137,6 @@ public class AutoModeDriveForwardTurnAndFireWithVision extends AutoMode {
 	public String GetColumNames() {
 		return "state";
 	}
-
 
 	@Override
 	public String log() {

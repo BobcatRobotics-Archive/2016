@@ -40,7 +40,7 @@ public class AutoModeDriveObsticalWithVision extends AutoMode {
     public void autoInit() {    	
     	state = AutoStates.DriveForward;   
     	lastDriveForwardEventTime = 0;
-    	robot.shiftPneumatic.set(true);
+    	robot.shiftPneumatic.set(true); //high gear
     }
 
     public void autoPeriodic() {
@@ -82,7 +82,6 @@ public class AutoModeDriveObsticalWithVision extends AutoMode {
     				//turn right
     				robot.drive.tankDrive(-1.0*turnSpeed,turnSpeed);
     			}
-    			
     			
     			if(Math.abs(targetBearing) < 5 
     					|| System.currentTimeMillis() - lastDriveForwardEventTime > turnTimeout) {
