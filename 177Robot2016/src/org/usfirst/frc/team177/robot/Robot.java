@@ -97,10 +97,10 @@ public class Robot extends IterativeRobot {
     private static final int GyroAnalogInput = 0;   
     
     /**Relay Constants**/
-    //private static final int RelayFlashLight = 0;
+    private static final int RelayFlashLight = 0;
     
     /**Relays**/
-    //Relay FlashLightRelay = new Relay(RelayFlashLight);
+    Relay FlashLightRelay = new Relay(RelayFlashLight);
     
     enum pickupStates {
     	BallAcquired,
@@ -303,7 +303,7 @@ public class Robot extends IterativeRobot {
     		rollerSideMotor.set(0);
     	}
 		rollerTopMotor.set(operatorStick.getRawAxis(1) * -1); //Left Stick, y axis
-		//FlashLightRelay.set(operatorStick.getRawButton(ButtonFlashlight) ? Relay.Value.kOn : Relay.Value.kOff);
+		FlashLightRelay.set(operatorStick.getRawButton(ButtonFlashlight) ? Relay.Value.kOn : Relay.Value.kOff);
 		//Catapult Override Control
 		/*  DAS if(switchPanel.getRawButton(1))
 		{
