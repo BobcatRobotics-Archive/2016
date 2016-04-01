@@ -39,6 +39,7 @@ public class AutoModeDriveForwardTurnAndFire extends AutoMode {
     	fireNow = false;
     	lastDriveForwardEventTime = 0;
     	robot.locator.Reset();
+    	robot.shiftPneumatic.set(false); // Low gear
     }
 
     public void autoPeriodic() {
@@ -75,6 +76,7 @@ public class AutoModeDriveForwardTurnAndFire extends AutoMode {
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > pauseDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;
+    				robot.shiftPneumatic.set(true); // High gear
     				state = AutoStates.Turn;
     			}
     			break;	
