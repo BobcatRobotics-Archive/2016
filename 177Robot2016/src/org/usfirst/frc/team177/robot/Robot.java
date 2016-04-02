@@ -61,8 +61,8 @@ public class Robot extends IterativeRobot {
 	Victor rearRightMotor = new Victor(MotorDriveRR);
 	Victor frontRightMotor = new Victor(MotorDriveFR); 
 	
-	Victor rollerTopMotor = new Victor(MotorRollerTop);
-	Victor rollerSideMotor = new Victor(MotorRollerSide);
+	public Victor rollerTopMotor = new Victor(MotorRollerTop);
+	public Victor rollerSideMotor = new Victor(MotorRollerSide);
 	
 	Victor winchMotor = new Victor(MotorWinch); //2 CIM's, y'd PWM
 	
@@ -175,7 +175,6 @@ public class Robot extends IterativeRobot {
         SmartDashboard.putData("Auto choices", chooser);
         String climbTip = null;
 		SmartDashboard.putString(climbTip, "Pickup up,full speed at tower.  \n Let go of pickup.  \n Flip Missile Switch. \n Left Stick down.   \n Press and HOLD pickup as soon as robot is no longer touching the ground while winching." );
-        
         catapult = new Catapult(this, latchPneumatic, pusherPneumatic);
         
         locator.start();
@@ -299,9 +298,7 @@ public class Robot extends IterativeRobot {
 		{
 			shiftPneumatic.set(rightStick.getRawButton(ButtonShift));
 		}
-    	if (!(climbState == climbStates.Climb)) {  //Ok I do not know how to make this better.  I want to be able to control the pickup freely unless we are in the climb state of the climb state machine. Dave plz advise
-			transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-		}
+    	transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
 		rollerSideMotor.set(operatorStick.getRawButton(ButtonSideRollers) ? -1 : 0);
 		rollerTopMotor.set(operatorStick.getRawAxis(1) * -1); //Left Stick, y axis
 		
@@ -311,7 +308,7 @@ public class Robot extends IterativeRobot {
 		}
 		lastFlashlightButton = operatorStick.getRawButton(ButtonFlashlight);
 		
-		FlashLightRelay.set(flashlightOn ? Relay.Value.kOn : Relay.Value.kOff);
+		FlashLightRelay.set(flashlightOn ? Relay.Value.kForward : Relay.Value.kOff);
 		
 		//Catapult Override Control
 		if(switchPanel.getRawButton(1))
@@ -360,7 +357,7 @@ public class Robot extends IterativeRobot {
 				}
 				break;	
 			case Climb:
-				climbPneumatic.set(false);
+				climbPneumatic.set(true);
 				winchMotor.set((Math.abs(operatorStick.getRawAxis(3)) > 0.5) ? 1 : 0);
 				break;
 			default:
@@ -375,5 +372,6 @@ public class Robot extends IterativeRobot {
     public void testPeriodic() {
     
     }
+   
     
 }
