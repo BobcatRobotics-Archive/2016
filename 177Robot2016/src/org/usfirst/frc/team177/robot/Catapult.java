@@ -26,7 +26,7 @@ public class Catapult {
     //State Machine Shooter
     private catapultStates catapultState = catapultStates.PreparingToFire;
     private static final double stateDelay = 1000; //ms
-    private static final double aimTimeout = 5000; //ms   
+    private static final double aimTimeout = 2500; //ms   
     private static final double aimThreshold = 0.5; //+/- 1 degrees == on target
     private static final double turnSpeed = 0.75;
     private static final double bearingFudgeFactor = 3;  //negative is left

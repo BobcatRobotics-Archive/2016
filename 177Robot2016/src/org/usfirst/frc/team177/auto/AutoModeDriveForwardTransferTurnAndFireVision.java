@@ -101,7 +101,7 @@ public class AutoModeDriveForwardTransferTurnAndFireVision extends AutoMode {
 			if(lastEventTime == 0) {
 				lastEventTime = System.currentTimeMillis();
 			}
-			robot.rollerTopMotor.set(1);
+			robot.rollerTopMotor.set(-1);
 			robot.rollerSideMotor.set(-1);
 			if(System.currentTimeMillis() - lastEventTime > transferDelay) {
 				robot.drive.tankDrive(0, 0);
