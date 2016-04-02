@@ -295,7 +295,10 @@ public class Robot extends IterativeRobot {
 		drive.tankDrive(left, right);
 		
 		//General Controls
-		shiftPneumatic.set(rightStick.getRawButton(ButtonShift));	
+		if (catapult.getState() != catapultStates.Aiming)
+		{
+			shiftPneumatic.set(rightStick.getRawButton(ButtonShift));
+		}
     	if (!(climbState == climbStates.Climb)) {  //Ok I do not know how to make this better.  I want to be able to control the pickup freely unless we are in the climb state of the climb state machine. Dave plz advise
 			transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
 		}
@@ -358,7 +361,7 @@ public class Robot extends IterativeRobot {
 				break;	
 			case Climb:
 				climbPneumatic.set(false);
-				winchMotor.set(Math.abs(operatorStick.getRawAxis(3)));
+				winchMotor.set((Math.abs(operatorStick.getRawAxis(3)) > 0.5) ? 1 : 0);
 				break;
 			default:
 				break;

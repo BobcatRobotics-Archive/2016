@@ -137,7 +137,9 @@ public class Catapult {
 				}								
 				
 				
-				lastShooterEventTime = System.currentTimeMillis();				
+				lastShooterEventTime = System.currentTimeMillis();		
+				
+				robot.shiftPneumatic.set(true); //high gear
 			}
 			
 			double targetBearing = targetHeading - robot.locator.GetHeading();
@@ -182,7 +184,6 @@ public class Catapult {
 			break;
 		}
     }
-    
     
     public void setState(catapultStates newState)
     {
