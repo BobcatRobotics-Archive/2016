@@ -338,7 +338,7 @@ public class Robot extends IterativeRobot {
 			else {
 				climbPneumatic.set(false);
 			}
-			winchMotor.set(operatorStick.getRawAxis(3) > 0 ? Math.abs(operatorStick.getRawAxis(3)) : (operatorStick.getRawAxis(3) / 4));	
+			winchMotor.set(operatorStick.getRawAxis(3) > 0 ? Math.abs(operatorStick.getRawAxis(3)) : (operatorStick.getRawAxis(3) / 4));	//Down on left stick in climb up is unclimb
 		} else {
 			switch(climbState) {
 			case Stowed:
