@@ -40,6 +40,8 @@ public class Robot extends IterativeRobot {
     
     final String chevalDeFrise = "Cheval De Frise No Fire";
     final String chevalDeFriseFire = "Cheval De Frise Fire With Vision";
+    
+    final String driveForwardTransferTurnAndFireVision = "Low Bar Transfer Turn And Fire with Vision";
   
     String autoSelected;
     SendableChooser chooser;
@@ -171,6 +173,7 @@ public class Robot extends IterativeRobot {
         chooser.addObject(lowBarWithVision, 						lowBarWithVision);
         chooser.addObject(chevalDeFrise, 							chevalDeFrise);
         chooser.addObject(chevalDeFriseFire, 						chevalDeFriseFire);
+        chooser.addObject(driveForwardTransferTurnAndFireVision,    driveForwardTransferTurnAndFireVision);
         
         SmartDashboard.putData("Auto choices", chooser);
         String climbTip = null;
@@ -259,6 +262,9 @@ public class Robot extends IterativeRobot {
 	    			break;
 	    		case chevalDeFriseFire:
 	    			auto = new AutoModeChevalDeFrise(this, true);
+	    			break;
+	    		case driveForwardTransferTurnAndFireVision:
+	    			auto = new AutoModeDriveForwardTransferTurnAndFireVision(this);
 	    			break;
 	    		case doNothing:
 	        	default:
