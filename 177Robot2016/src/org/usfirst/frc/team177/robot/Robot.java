@@ -154,6 +154,8 @@ public class Robot extends IterativeRobot {
     AutoMode auto;
     long autoStartTime;
     
+    private boolean flashlightOn = false;
+    private boolean lastFlashlightButton = false;
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
@@ -171,7 +173,8 @@ public class Robot extends IterativeRobot {
         chooser.addObject(chevalDeFriseFire, 						chevalDeFriseFire);
         
         SmartDashboard.putData("Auto choices", chooser);
-        
+        String climbTip = null;
+		SmartDashboard.putString(climbTip, "Pickup up,full speed at tower.  \n Let go of pickup.  \n Flip Missile Switch. \n Left Stick down.   \n Press and HOLD pickup as soon as robot is no longer touching the ground while winching." );
         
         catapult = new Catapult(this, latchPneumatic, pusherPneumatic);
         
@@ -297,21 +300,24 @@ public class Robot extends IterativeRobot {
 			transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
 		}
 		rollerSideMotor.set(operatorStick.getRawButton(ButtonSideRollers) ? -1 : 0);
-    	if(operatorStick.getRawButton(ButtonSideRollers)) {
-    		rollerSideMotor.set(1);
-    	} else {
-    		rollerSideMotor.set(0);
-    	}
 		rollerTopMotor.set(operatorStick.getRawAxis(1) * -1); //Left Stick, y axis
-		FlashLightRelay.set(operatorStick.getRawButton(ButtonFlashlight) ? Relay.Value.kOn : Relay.Value.kOff);
+		
+		if(operatorStick.getRawButton(ButtonFlashlight) && !lastFlashlightButton)
+		{
+			flashlightOn = !flashlightOn;
+		}
+		lastFlashlightButton = operatorStick.getRawButton(ButtonFlashlight);
+		
+		FlashLightRelay.set(flashlightOn ? Relay.Value.kOn : Relay.Value.kOff);
+		
 		//Catapult Override Control
-		/*  DAS if(switchPanel.getRawButton(1))
+		if(switchPanel.getRawButton(1))
 		{
 			latchPneumatic.set(switchPanel.getRawButton(2));
 			pusherPneumatic.set(switchPanel.getRawButton(3)?DoubleSolenoid.Value.kForward:DoubleSolenoid.Value.kReverse);
 			catapult.setState(catapultStates.BallsIn);			
 		}
-		else*/
+		else
 		{
 			catapult.loop(operatorStick.getRawButton(ButtonFire), operatorStick.getRawButton(ButtonAimFire));
 		}
@@ -329,7 +335,7 @@ public class Robot extends IterativeRobot {
 			else {
 				climbPneumatic.set(false);
 			}
-			winchMotor.set(operatorStick.getRawAxis(3) > 0 ? Math.abs(operatorStick.getRawAxis(3)) : operatorStick.getRawAxis(3) / 10);	
+			winchMotor.set(operatorStick.getRawAxis(3) > 0 ? Math.abs(operatorStick.getRawAxis(3)) : (operatorStick.getRawAxis(3) / 4));	
 		} else {
 			switch(climbState) {
 			case Stowed:
@@ -353,7 +359,6 @@ public class Robot extends IterativeRobot {
 			case Climb:
 				climbPneumatic.set(false);
 				winchMotor.set(Math.abs(operatorStick.getRawAxis(3)));
-				transferPneumatic.set(Value.kForward);
 				break;
 			default:
 				break;
