@@ -85,7 +85,8 @@ public class Robot extends IterativeRobot {
     public Solenoid latchPneumatic = new Solenoid(1); //false = out
     public DoubleSolenoid transferPneumatic = new DoubleSolenoid(2,3); //false = out
     public DoubleSolenoid pusherPneumatic = new DoubleSolenoid(4,5); //false = out
-    public Solenoid climbPneumatic = new Solenoid(6);
+    public Solenoid climbFourBarPneumatic = new Solenoid(6);
+    public Solenoid climbPancakePneumatic = new Solenoid(7);
 	
     /** Digital Input **/
     //DigitalInput ballIRSwitch = new DigitalInput(); //RIP IR, died 2/11/16 at the hands of Ulf's SuperAwesome piece of Lexan 
@@ -124,8 +125,8 @@ public class Robot extends IterativeRobot {
     long climberEventTime; 
     public enum climbStates {
            	Stowed,
+           	PancakeOut,
            	ArmsOut,
-           	PickupDown,
            	Climb,
            };
     private climbStates climbState = climbStates.Stowed;
@@ -335,37 +336,50 @@ public class Robot extends IterativeRobot {
 		//Climbing Override Control
 		if (operatorStick.getRawButton(ButtonOverrideToggle)) {
 			if(operatorStick.getRawButton(ButtonOverrideWinchOut)) {
-				climbPneumatic.set(true);
+				climbFourBarPneumatic.set(true);
 			}
 			else {
-				climbPneumatic.set(false);
+				climbFourBarPneumatic.set(false);
 			}
 			winchMotor.set(operatorStick.getRawAxis(3) > 0 ? Math.abs(operatorStick.getRawAxis(3)) : (operatorStick.getRawAxis(3) / 4));	//Down on left stick in climb up is unclimb
 		} else {
 			switch(climbState) {
 			case Stowed:
-				climbPneumatic.set(false);
+				climbFourBarPneumatic.set(false);
 				winchMotor.set(0);
 				if(switchPanel.getRawButton(4)) {
 					climbState = climbStates.ArmsOut;
+				}
+				break;
+			case PancakeOut:
+				if(climberEventTime == 0) {
+					climberEventTime = System.currentTimeMillis();
+				}
+				climbPancakePneumatic.set(true);
+				if(!switchPanel.getRawButton(4)) {
+					climbState = climbStates.Stowed;
+				}
+				if(System.currentTimeMillis() - climberEventTime > 500) {
+					climbState = climbStates.ArmsOut;
+					climberEventTime = 0;
 				}
 				break;
 			case ArmsOut:
 				if(climberEventTime == 0) { 
 					climberEventTime = System.currentTimeMillis();
 				}
-				climbPneumatic.set(true);
+				climbFourBarPneumatic.set(true);
 				winchMotor.set(0);
 				if(!switchPanel.getRawButton(4)) {
 					climbState = climbStates.Stowed;
 				}
-				if(System.currentTimeMillis() - climberEventTime > 1000) { //Magic Delay	
+				if(System.currentTimeMillis() - climberEventTime > 250) { //Magic Delay	
 					climbState = climbStates.Climb;
 					climberEventTime = 0;
 				}
 				break;	
 			case Climb:
-				climbPneumatic.set(true);
+				climbFourBarPneumatic.set(true);
 				winchMotor.set((Math.abs(operatorStick.getRawAxis(3)) > 0.5) ? 1 : 0);
 				if(!switchPanel.getRawButton(4)) {
 					climbState = climbStates.Stowed;
