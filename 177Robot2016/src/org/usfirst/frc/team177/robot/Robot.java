@@ -315,7 +315,6 @@ public class Robot extends IterativeRobot {
 		lastFlashlightButton = operatorStick.getRawButton(ButtonFlashlight);
 		
 		FlashLightRelay.set(flashlightOn ? Relay.Value.kForward : Relay.Value.kOff);
-		
 		//Catapult Override Control
 		if(switchPanel.getRawButton(1))
 		{
@@ -357,7 +356,10 @@ public class Robot extends IterativeRobot {
 				}
 				climbPneumatic.set(true);
 				winchMotor.set(0);
-				if(System.currentTimeMillis() - climberEventTime > 1000) { //Magic Delay
+				if(!switchPanel.getRawButton(4)) {
+					climbState = climbStates.Stowed;
+				}
+				if(System.currentTimeMillis() - climberEventTime > 1000) { //Magic Delay	
 					climbState = climbStates.Climb;
 					climberEventTime = 0;
 				}
@@ -365,6 +367,9 @@ public class Robot extends IterativeRobot {
 			case Climb:
 				climbPneumatic.set(true);
 				winchMotor.set((Math.abs(operatorStick.getRawAxis(3)) > 0.5) ? 1 : 0);
+				if(!switchPanel.getRawButton(4)) {
+					climbState = climbStates.Stowed;
+				}
 				break;
 			default:
 				break;

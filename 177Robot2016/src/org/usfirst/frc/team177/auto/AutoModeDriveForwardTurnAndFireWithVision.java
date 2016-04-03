@@ -15,6 +15,7 @@ public class AutoModeDriveForwardTurnAndFireWithVision extends AutoMode {
 		DriveForward,
 		Pause,
 		Turn,
+		DriveForwardAgain,
 		PauseForAim,
 		Aim,
 		Fire,
@@ -30,6 +31,7 @@ public class AutoModeDriveForwardTurnAndFireWithVision extends AutoMode {
     double turnHeading = 55;
     double turnDelay = 3000;
     double pauseForAimDelay = 1000;
+    double driveForwardAgainDelay = 750;
     
     
     boolean fireNow = false;
@@ -94,6 +96,17 @@ public class AutoModeDriveForwardTurnAndFireWithVision extends AutoMode {
     			robot.drive.tankDrive(-0.75,0.75);
     			if((robot.locator.GetHeading() > turnHeading && robot.locator.GetHeading() < 180) || System.currentTimeMillis() - lastDriveForwardEventTime > turnDelay) {
     				robot.drive.tankDrive(0,0);
+    				lastDriveForwardEventTime = 0;
+    				state = AutoStates.DriveForwardAgain;
+    			}
+    			break;
+    		case DriveForwardAgain:
+    			if(lastDriveForwardEventTime == 0) {
+    				lastDriveForwardEventTime = 0;
+    			}
+    			robot.drive.tankDrive(-0.75, -0.75);
+    			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardAgainDelay) {
+    				robot.drive.tankDrive(0, 0);
     				lastDriveForwardEventTime = 0;
     				state = AutoStates.PauseForAim;
     			}

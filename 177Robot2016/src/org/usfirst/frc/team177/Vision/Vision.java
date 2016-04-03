@@ -371,7 +371,7 @@ public class Vision {
 				try {
 					//use v4l2-ctl to turn off auto exposure
 					//min=5 max=20000 step=1 default=156 value=5
-					Runtime.getRuntime().exec(new String[]{"bash","-c","v4l2-ctl --set-ctrl=exposure_auto=1;v4l2-ctl --set-ctrl=exposure_absolute=20"});
+					Runtime.getRuntime().exec(new String[]{"bash","-c","v4l2-ctl --set-ctrl=exposure_auto=1;v4l2-ctl --set-ctrl=exposure_absolute=10"});
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
