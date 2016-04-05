@@ -8,7 +8,7 @@ import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
-public class AutoModeDriveForwardTurnAndFireWithVision extends AutoMode {
+public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode {
     
 	enum AutoStates {
 		PutPickupDown,
@@ -37,7 +37,7 @@ public class AutoModeDriveForwardTurnAndFireWithVision extends AutoMode {
     boolean fireNow = false;
     boolean aimNow = false;
 
-    public AutoModeDriveForwardTurnAndFireWithVision(Robot robot) {
+    public AutoModeDriveForwardTurnAndFireWithVisionTransfer(Robot robot) {
         super(robot);
         System.out.println("AutoModeDriveForwardWithVision Constructor");
     }    
@@ -82,6 +82,7 @@ public class AutoModeDriveForwardTurnAndFireWithVision extends AutoMode {
     				lastDriveForwardEventTime = System.currentTimeMillis();
     				robot.shiftPneumatic.set(true); //high gear
     			}		
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > pauseDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;
@@ -92,10 +93,14 @@ public class AutoModeDriveForwardTurnAndFireWithVision extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
+    			robot.rollerTopMotor.set(-1);
+    			robot.rollerSideMotor.set(-1);
     			robot.drive.tankDrive(-0.75,0.75);
     			if((robot.locator.GetHeading() > turnHeading && robot.locator.GetHeading() < 180) || System.currentTimeMillis() - lastDriveForwardEventTime > turnDelay) {
+    				robot.rollerTopMotor.set(0);
+        			robot.rollerSideMotor.set(0);
     				robot.drive.tankDrive(0,0);
+    				robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
     				lastDriveForwardEventTime = 0;
     				state = AutoStates.DriveForwardAgain;
     			}

@@ -265,7 +265,7 @@ public class Robot extends IterativeRobot {
 	    			auto = new AutoModeChevalDeFrise(this, true);
 	    			break;
 	    		case driveForwardTransferTurnAndFireVision:
-	    			auto = new AutoModeDriveForwardTransferTurnAndFireVision(this);
+	    			auto = new AutoModeDriveForwardTurnAndFireWithVisionTransfer(this);
 	    			break;
 	    		case doNothing:
 	        	default:
@@ -348,7 +348,7 @@ public class Robot extends IterativeRobot {
 				climbFourBarPneumatic.set(false);
 				winchMotor.set(0);
 				if(switchPanel.getRawButton(4)) {
-					climbState = climbStates.ArmsOut;
+					climbState = climbStates.PancakeOut;
 				}
 				break;
 			case PancakeOut:
