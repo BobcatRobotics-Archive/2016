@@ -316,6 +316,12 @@ public class Robot extends IterativeRobot {
 		lastFlashlightButton = operatorStick.getRawButton(ButtonFlashlight);
 		
 		FlashLightRelay.set(flashlightOn ? Relay.Value.kForward : Relay.Value.kOff);
+		if(operatorStick.getRawButton(1)) {
+			FlashLightRelay.set(Relay.Value.kOff);
+			flashlightOn = false;
+		} else {
+			FlashLightRelay.set(flashlightOn ? Relay.Value.kForward : Relay.Value.kOff);
+		}
 		//Catapult Override Control
 		if(switchPanel.getRawButton(1))
 		{
