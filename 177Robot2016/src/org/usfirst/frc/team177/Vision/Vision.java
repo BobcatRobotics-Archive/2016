@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -26,7 +28,22 @@ public class Vision {
 	
 	//used to prevent crashing if loaded on a controller without OpenCV 
 	private boolean openCVisGood = true;
-		
+	
+	//Change this to false to disable looking for the reference triangle.
+	private static final boolean useReferenceTarget = true; 	
+	private static final int referenceMinPixel = 200; // don't look for the reference above this point.
+	private static final double minReferenceWidth = 10;
+	private static final double referenceExpectedAspect = 1.25;
+	private static final double referenceAspectTheshold = 0.5;
+	private static final int defaultReferenceTargetOffset = 0; //tweak this on robot 
+	
+	//change this to false to disable doing the polygon approximation
+	private static final boolean usePolygonApproximation = true;
+	
+	public List<MatOfPoint> referenceTarget = new ArrayList<MatOfPoint>(); //for updating image
+	int referenceTargetOffset = 0;	
+	
+	static final double minTargetWidth = 20;		
 	static final double expectedAspect = 5.0/3.0;
 	static final double aspectTheshold = 0.3;
 	static final int cameraIndex	= 0; //should be 0 on robot?
@@ -208,8 +225,13 @@ public class Vision {
 		if (Image == null) return null;
 		
 		Mat IMask = new Mat();	
-					
-		// Only retain pixels where G > 200		
+		MatOfPoint2f approx = new MatOfPoint2f();
+		MatOfPoint2f contour = new MatOfPoint2f();
+		
+		List<Rect> interestingBlobs = new ArrayList<Rect>();		
+		List<MatOfPoint> interestingReferenceBlobs = new ArrayList<MatOfPoint>();	
+							
+		// Only retain pixels where G > 100		
 		Core.inRange(Image, new Scalar(0, 100, 0), new Scalar(255, 255, 255), IMask);
 	
 		// Convert to HSV and apply threshold		
@@ -223,14 +245,28 @@ public class Vision {
 		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();		 
 		Imgproc.findContours(IMask, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
 		
-		// Loop through each contour to find ones within tolerance for correct Aspect Ratio
-		List<Rect> interestingBlobs = new ArrayList<Rect>();		
+		// Loop through each contour to find ones within tolerance for correct Aspect Ratio		
 		for (int i = 0; i < contours.size(); ++i) {
 			Rect BB = Imgproc.boundingRect(contours.get(i));
 			double aspectRatio = BB.width / (double) BB.height;
 
-			if (Math.abs(aspectRatio - expectedAspect) <= aspectTheshold) {
-				interestingBlobs.add(BB);
+			if (BB.width >= minTargetWidth && Math.abs(aspectRatio - expectedAspect) <= aspectTheshold) {
+				if(usePolygonApproximation)
+				{
+					//only add shapes with 8 sides
+					contours.get(i).convertTo(contour, CvType.CV_32FC2);
+					Imgproc.approxPolyDP(contour, approx, 3, true);			
+					if(approx.rows() == 8)
+					{			
+						interestingBlobs.add(BB);
+					}				
+				} else {
+					interestingBlobs.add(BB);
+				}					
+			}
+			
+			if(useReferenceTarget && BB.width >= minReferenceWidth && BB.y > referenceMinPixel && Math.abs(aspectRatio - referenceExpectedAspect) <= referenceAspectTheshold) {
+				interestingReferenceBlobs.add(contours.get(i));
 			}
 		}
 		
@@ -254,13 +290,57 @@ public class Vision {
 				minValue = delta;
 			}
 		}
+		
+		if(useReferenceTarget)
+		{
+			//try to find the reference by finding the largest triangle		
+			int maxReferenceIdx = -1;
+			double maxReferenceValue = 0;		
+			
+			MatOfPoint2f maxReferenceTarget = new MatOfPoint2f();
+			for (int i = 0; i < interestingReferenceBlobs.size(); ++i) {			
+				interestingReferenceBlobs.get(i).convertTo(contour, CvType.CV_32FC2);
+				Imgproc.approxPolyDP(contour, approx, 3, true);			
+				if(approx.rows() == 3)
+				{				
+					//found a triangle ?
+					Rect BB = Imgproc.boundingRect(interestingReferenceBlobs.get(i));
+					if(BB.width > maxReferenceValue)
+					{
+						maxReferenceValue = BB.width;
+						maxReferenceIdx = i;
+						contour.copyTo(maxReferenceTarget);
+					}
+				}			
+			}
+			
+			if (maxReferenceIdx >= 0 && maxReferenceIdx <= interestingReferenceBlobs.size())
+			{
+				//if we found the triangle, update the reference offset
+				MatOfPoint tmpPt = new MatOfPoint();
+				maxReferenceTarget.convertTo(tmpPt, CvType.CV_32S);
+				referenceTarget.clear();
+				referenceTarget.add(0, tmpPt);
+				Rect BB = Imgproc.boundingRect(interestingReferenceBlobs.get(maxReferenceIdx));
+				referenceTargetOffset = (BB.x + (BB.width/2)) - (Image.cols()/2) - defaultReferenceTargetOffset;			
+			} 
+			else
+			{
+				//Reference target not found
+				referenceTarget.clear();
+				referenceTargetOffset = 0;
+			}
+		} else {
+			referenceTargetOffset = 0;
+		}
+		
 
 		if(minIdx < 0 || minIdx > interestingBlobs.size())
 		{
 			return null;
 		}
 		
-		System.out.println("score: " + minValue);
+		//System.out.println("score: " + minValue);
 		
 		return interestingBlobs.get(minIdx);
 	}
@@ -274,8 +354,8 @@ public class Vision {
 		if(!openCVisGood) return false;
 					
 		// Constants (CALIBRATE ME!)
-		final int X0 = 174; //260; // inches (distance from target in sample image)
-		final int P0 = 44;  //32;    // pixels (height in pixels of sample image);
+		//final int X0 = 174; //260; // inches (distance from target in sample image)
+		//final int P0 = 44;  //32;    // pixels (height in pixels of sample image);
 		
 		Rect target = findTarget(frame);
 		
@@ -287,15 +367,15 @@ public class Vision {
 		else
 		{
 			int targetCenterX = target.x + (target.width / 2);
-			int imageCenterX = frame.cols() / 2;
-			int deltaX  = targetCenterX - imageCenterX;
+			int imageCenterX = (frame.cols() / 2) + referenceTargetOffset;
+			int deltaX  = targetCenterX - imageCenterX;						
 
 			//double deltaTheta = Math.atan(deltaX / ((X0 / (double) P0) * target.height));
 			//bearing = deltaTheta * (180.0 / Math.PI);
 			
 			bearing = (61.0f/frame.cols())* (double)deltaX; //based on 61 degree field of view.
 		}
-		System.out.println("bearing: " + bearing);		
+		//System.out.println("bearing: " + bearing);		
 		
 		if(UpdateSaveImage) {
 			//build image with target highlighted
@@ -305,12 +385,19 @@ public class Vision {
 			}
 			//Add bearing text
 			Imgproc.putText(frame, String.format("Bearing %f", bearing),  new Point(100,460), Core.FONT_HERSHEY_PLAIN, 2,  new Scalar(255,255,255,255));
+			
+			if(useReferenceTarget && !referenceTarget.isEmpty())
+			{
+				Imgproc.drawContours(frame, referenceTarget, 0, new Scalar(255, 0, 0, 255), 1);
+				//add reference 
+				Imgproc.putText(frame, String.format("Reference %d", referenceTargetOffset),  new Point(100,470), Core.FONT_HERSHEY_PLAIN, 2,  new Scalar(255,255,255,255));
+			}
 
 			synchronized(saveImageLock) {
 				frame.copyTo(saveImage);
 			}
 		}						
-		//System.out.println("AnalyzeTarget execution time: " + (System.currentTimeMillis() - startTime));
+		System.out.println("AnalyzeTarget execution time: " + (System.currentTimeMillis() - startTime));
 		
 		return success;		
 	}
@@ -326,9 +413,6 @@ public class Vision {
 		{
 		    lastFrame = new Mat();
 		    
-		    int retryCnt = 0;
-			
-			
 			Thread thisThread = new Thread(this);
 			//Lower the priority of this thread to try and prevent interfering with normal robot behavior 
 			thisThread.setPriority(Thread.NORM_PRIORITY-2);

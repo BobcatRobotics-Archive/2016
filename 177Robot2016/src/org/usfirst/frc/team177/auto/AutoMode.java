@@ -47,10 +47,11 @@ public abstract class AutoMode implements Logable {
 	public AutoMode(Robot robot) {
         this.robot = robot;
         
-        DrivePID = new BasicPIDController(DriveP,DriveI,DriveD);
+     /*Not used   DrivePID = new BasicPIDController(DriveP,DriveI,DriveD);
         DrivePID.setOutputRange(DriveMin, DriveMax);
         SteerPID = new BasicPIDController(SteerP,SteerI,SteerD);
-        SteerPID.setOutputRange(SteerMin, SteerMax);    
+        SteerPID.setOutputRange(SteerMin, SteerMax);
+        */    
 	}
 	
 	public abstract void autoPeriodic();

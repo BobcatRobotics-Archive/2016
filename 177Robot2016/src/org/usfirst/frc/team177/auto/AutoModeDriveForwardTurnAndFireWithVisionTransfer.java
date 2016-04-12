@@ -19,6 +19,8 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
 		PauseForAim,
 		Aim,
 		Fire,
+		PauseForFire,
+		Backup,
 		Stop
 	};
 	
@@ -32,16 +34,20 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     double turnDelay = 3000;
     double pauseForAimDelay = 1000;
     double driveForwardAgainDelay = 750;
-    
+    double backupDelay = 2000;
+    double pauseForFireDelay = 500;
     
     boolean fireNow = false;
     boolean aimNow = false;
+    boolean backup;
 
-    public AutoModeDriveForwardTurnAndFireWithVisionTransfer(Robot robot) {
+    
+    public AutoModeDriveForwardTurnAndFireWithVisionTransfer(Robot robot, boolean backup) {
         super(robot);
+        this.backup = backup; 
         System.out.println("AutoModeDriveForwardWithVision Constructor");
     }    
-    
+
     public void autoInit() {    	
     	state = AutoStates.PutPickupDown; 
     	fireNow = false;
@@ -95,7 +101,8 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     			}
     			robot.rollerTopMotor.set(-1);
     			robot.rollerSideMotor.set(-1);
-    			robot.drive.tankDrive(-0.75,0.75);
+    			//robot.drive.tankDrive(-0.75,0.75);
+    			robot.drive.tankDrive(-0.75,-0.25); //attempt to curve away from side wall
     			if((robot.locator.GetHeading() > turnHeading && robot.locator.GetHeading() < 180) || System.currentTimeMillis() - lastDriveForwardEventTime > turnDelay) {
     				robot.rollerTopMotor.set(0);
         			robot.rollerSideMotor.set(0);
@@ -135,9 +142,30 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     			if(robot.catapult.getState() == catapultStates.ReadyToFire)
     			{
     				fireNow = true;
+    				state = AutoStates.PauseForFire;
+    			}
+    			break;
+    		case PauseForFire:
+    			if(lastDriveForwardEventTime == 0) { 
+    				lastDriveForwardEventTime = System.currentTimeMillis();
+    			}		
+    			if(System.currentTimeMillis() - lastDriveForwardEventTime > pauseForFireDelay) {
+    				robot.drive.tankDrive(0,0);
+    				lastDriveForwardEventTime = 0;    				
+    				state = backup ? AutoStates.Backup : AutoStates.Stop;
+    			}
+    			break;    			
+    		case Backup:
+    			if(lastDriveForwardEventTime == 0) {
+    				lastDriveForwardEventTime = System.currentTimeMillis();
+    			}
+    			robot.drive.tankDrive(0.75, 0.75);
+    			if(System.currentTimeMillis() - lastDriveForwardEventTime > backupDelay) {
+    				robot.drive.tankDrive(0, 0);
+    				lastDriveForwardEventTime = 0;
     				state = AutoStates.Stop;
     			}
-    			break; 
+    			break;
     		case Stop:
     		default:
     			robot.drive.tankDrive(0,0);

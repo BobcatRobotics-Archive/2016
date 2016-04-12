@@ -1,17 +1,31 @@
 package org.usfirst.frc.team177.robot;
 
+import org.usfirst.frc.team177.lib.BasicPIDController;
+
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Catapult {
 
+	private static final boolean usePIDForAim = false;
+	private static final boolean useLoopOnAim = true;
+	private static final int loopOnAimMaxLoop = 2;
+	private int loopOnAimLoopCount;
+	
+	private BasicPIDController SteerPID;
+    private static double SteerP 	= 0.1;    //Proportial gain for Steering System
+    private static double SteerI 	= 0.001;  //Integral gain for Steering System
+    private static double SteerD 	= 0.00;   //Derivative gain for Steering System
+    private static double SteerMax 	= 1;   	  //Max Saturation value for control
+    private static double SteerMin 	= -1;     //Min Saturation value for control
+    
+    private long lastRanSteerPID;
 	
 	private Solenoid latchPneumatic; 
 	private DoubleSolenoid pusherPneumatic;
 	
 	Robot robot; //reference to main implementation
-
 	
 	/**Enums**/
     public enum catapultStates {
@@ -47,6 +61,9 @@ public class Catapult {
     	this.robot = robot;
     	this.latchPneumatic = latchPneumatic;
     	this.pusherPneumatic = pusherPneumatic;   	
+    	
+    	SteerPID = new BasicPIDController(SteerP,SteerI,SteerD);
+        SteerPID.setOutputRange(SteerMin, SteerMax);
     }
     
     //wrapper function to avoid having to rework a bunch of existing code
@@ -113,6 +130,7 @@ public class Catapult {
 			else if(aimThenFire)
 			{
 				catapultState = catapultStates.Aiming;
+				loopOnAimLoopCount = 0;
 			}						
 			break;
 		case Aiming:
@@ -136,6 +154,10 @@ public class Catapult {
 					while (targetHeading >= 360) { targetHeading -= 360.0; }					
 				}								
 				
+				if(usePIDForAim) {
+					SteerPID.reset();
+					lastRanSteerPID = System.currentTimeMillis();
+				}
 				
 				lastShooterEventTime = System.currentTimeMillis();		
 				
@@ -148,30 +170,63 @@ public class Catapult {
 			
 			SmartDashboard.putString("Aim Sequence", "Target Bearing " + targetBearing);
 			
-			//determine turn direction			
-			if(targetBearing < 0) {
-				//turn left
-				robot.drive.tankDrive(turnSpeed,-1.0*turnSpeed);
-			} else {		
-				//turn right
-				robot.drive.tankDrive(-1.0*turnSpeed,turnSpeed);
+			if(usePIDForAim)
+			{
+				//Calculate time step
+		        long now = System.currentTimeMillis();
+		        double dT = (now - lastRanSteerPID)/1000.0; //dT in seconds
+		        lastRanSteerPID = now;
+				double steer = SteerPID.calculate(targetBearing, dT);
+				robot.drive.tankDrive(steer, -steer);
+			}
+			else
+			{
+				//determine turn direction			
+				if(targetBearing < 0) {
+					//turn left
+					robot.drive.tankDrive(turnSpeed,-1.0*turnSpeed);
+				} else {		
+					//turn right
+					robot.drive.tankDrive(-1.0*turnSpeed,turnSpeed);
+				}
 			}
 						
 			if(Math.abs(targetBearing) < aimThreshold || System.currentTimeMillis() - lastShooterEventTime > aimTimeout) {
 				if(Math.abs(targetBearing) < aimThreshold)
 				{
-					SmartDashboard.putString("Aim Sequence", "Aim Successful");
-					//Fire!
-					//Change this to auto fire.
-					//catapultState = catapultStates.NoBall;
-					catapultState = catapultStates.ReadyToFire;
+					if(useLoopOnAim && ++loopOnAimLoopCount < loopOnAimMaxLoop)
+					{
+						//take another picture to confirm...
+						double bearing = robot.vision.getBearing();
+						if (Math.abs(bearing) < aimThreshold)
+						{
+							//Aim is good!
+							SmartDashboard.putString("Aim Sequence", "Aim Confirmed");
+							//Change this to auto fire.
+							//catapultState = catapultStates.NoBall;
+							catapultState = catapultStates.ReadyToFire;
+						}
+						else
+						{
+							//retrying Aim
+							SmartDashboard.putString("Aim Sequence", "Retrying Aim");						//
+							catapultState = catapultStates.Aiming;
+						}						
+					} 
+					else
+					{
+						SmartDashboard.putString("Aim Sequence", "Aim Successful");
+						//Fire!
+						//Change this to auto fire.
+						//catapultState = catapultStates.NoBall;
+						catapultState = catapultStates.ReadyToFire;
+					}
 					
 				}
 				else
-				{
+				{					
 					SmartDashboard.putString("Aim Sequence", "Aim Timeout");
-					//Fire! -- May want to change this
-					//catapultState = catapultStates.NoBall;
+					//Don't Fire
 					catapultState = catapultStates.ReadyToFire;
 				}
 								

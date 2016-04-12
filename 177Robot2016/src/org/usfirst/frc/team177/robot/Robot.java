@@ -42,6 +42,9 @@ public class Robot extends IterativeRobot {
     final String chevalDeFriseFire = "Cheval De Frise Fire With Vision";
     
     final String driveForwardTransferTurnAndFireVision = "Low Bar Transfer Turn And Fire with Vision";
+    final String driveForwardTransferTurnAndFireVisionBackup  = "Low Bar Transfer Turn And Fire with Vision Then Backup";
+    
+    final String driveForwardTransferDownAimFire = "Drive forward, Transfer Down, Aim, Fire";
   
     String autoSelected;
     SendableChooser chooser;
@@ -165,18 +168,21 @@ public class Robot extends IterativeRobot {
      */
     public void robotInit() {
         chooser = new SendableChooser();
-        chooser.addDefault(doNothing, 								doNothing);
-        chooser.addObject(driveForwardTransferUp, 					driveForwardTransferUp);
-        chooser.addObject(driveForwardTransferUpShort,				driveForwardTransferUpShort);
-        chooser.addObject(driveForwardOverObsticalWithVision,		driveForwardOverObsticalWithVision);
-        chooser.addObject(driveForwardOverObsticalWithVisionShort, 	driveForwardOverObsticalWithVisionShort);
-        chooser.addObject(lowBar, 									lowBar);
-        chooser.addObject(lowBarWithVision, 						lowBarWithVision);
-        chooser.addObject(chevalDeFrise, 							chevalDeFrise);
-        chooser.addObject(chevalDeFriseFire, 						chevalDeFriseFire);
-        chooser.addObject(driveForwardTransferTurnAndFireVision,    driveForwardTransferTurnAndFireVision);
+        chooser.addDefault(doNothing, 									doNothing);
+        chooser.addObject(driveForwardTransferUp, 						driveForwardTransferUp);
+        chooser.addObject(driveForwardTransferUpShort,					driveForwardTransferUpShort);
+        chooser.addObject(driveForwardOverObsticalWithVision,			driveForwardOverObsticalWithVision);
+        chooser.addObject(driveForwardOverObsticalWithVisionShort, 		driveForwardOverObsticalWithVisionShort);
+        chooser.addObject(lowBar, 										lowBar);
+        chooser.addObject(lowBarWithVision, 							lowBarWithVision);
+        chooser.addObject(chevalDeFrise, 								chevalDeFrise);
+        chooser.addObject(chevalDeFriseFire, 							chevalDeFriseFire);
+        chooser.addObject(driveForwardTransferTurnAndFireVision,    	driveForwardTransferTurnAndFireVision);
+        chooser.addObject(driveForwardTransferTurnAndFireVisionBackup, 	driveForwardTransferTurnAndFireVisionBackup);
+        chooser.addObject(driveForwardTransferDownAimFire,				driveForwardTransferDownAimFire);
         
         SmartDashboard.putData("Auto choices", chooser);
+        
         String climbTip = null;
 		SmartDashboard.putString(climbTip, "Pickup up,full speed at tower.  \n Let go of pickup.  \n Flip Missile Switch. \n Left Stick down.   \n Press and HOLD pickup as soon as robot is no longer touching the ground while winching." );
         catapult = new Catapult(this, latchPneumatic, pusherPneumatic);
@@ -265,8 +271,14 @@ public class Robot extends IterativeRobot {
 	    			auto = new AutoModeChevalDeFrise(this, true);
 	    			break;
 	    		case driveForwardTransferTurnAndFireVision:
-	    			auto = new AutoModeDriveForwardTurnAndFireWithVisionTransfer(this);
+	    			auto = new AutoModeDriveForwardTurnAndFireWithVisionTransfer(this, false);
 	    			break;
+	    		case driveForwardTransferTurnAndFireVisionBackup:
+	    			auto = new AutoModeDriveForwardTurnAndFireWithVisionTransfer(this, true);
+	    			break;	   
+	    		case driveForwardTransferDownAimFire:
+	    			auto = new AutoModeDriveForwardTransferDownAimFire(this);
+	    			break;	    				    			
 	    		case doNothing:
 	        	default:
 	        		//Do Nothing
@@ -315,13 +327,13 @@ public class Robot extends IterativeRobot {
 		}
 		lastFlashlightButton = operatorStick.getRawButton(ButtonFlashlight);
 		
-		FlashLightRelay.set(flashlightOn ? Relay.Value.kForward : Relay.Value.kOff);
-		if(operatorStick.getRawButton(1)) {
-			FlashLightRelay.set(Relay.Value.kOff);
+		if(operatorStick.getRawButton(ButtonFire)) {
 			flashlightOn = false;
-		} else {
-			FlashLightRelay.set(flashlightOn ? Relay.Value.kForward : Relay.Value.kOff);
 		}
+		
+		FlashLightRelay.set(flashlightOn ? Relay.Value.kForward : Relay.Value.kOff);
+		
+		
 		//Catapult Override Control
 		if(switchPanel.getRawButton(1))
 		{
