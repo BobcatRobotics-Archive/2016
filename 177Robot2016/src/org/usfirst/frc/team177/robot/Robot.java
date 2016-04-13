@@ -206,6 +206,7 @@ public class Robot extends IterativeRobot {
         
         SmartDashboard.putData("Auto choices", autoChooser);
         
+        turnChooser = new SendableChooser();
         turnChooser.addDefault(turnNoTurn, turnNoTurn);
         turnChooser.addObject(turnFrom2, turnFrom2);
         turnChooser.addObject(turnFrom3, turnFrom3);
