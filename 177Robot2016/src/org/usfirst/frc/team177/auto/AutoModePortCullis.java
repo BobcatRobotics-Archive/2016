@@ -1,6 +1,4 @@
-/*
- * Basic Automode to test frame work
- */
+
 package org.usfirst.frc.team177.auto;
 
 import org.usfirst.frc.team177.robot.*;
@@ -8,11 +6,12 @@ import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
-public class AutoModeDriveForwardTransferDownAimFire extends AutoMode {
+public class AutoModePortCullis extends AutoMode {
     
 	enum AutoStates {
 		PutPickupDown,
 		DriveForward,
+		Turn,
 		PauseForAim,
 		Aim,
 		Fire,
@@ -31,10 +30,20 @@ public class AutoModeDriveForwardTransferDownAimFire extends AutoMode {
         
     boolean fireNow = false;
     boolean aimNow = false;
+    
+    private static final double[] turnAngles = {30, 10, -10, -20}; //guesses
+	private static final int turnTimeout = 3000;
+	Robot.Turns turn;	
+    double turnAngle = 0;
 
-    public AutoModeDriveForwardTransferDownAimFire(Robot robot) {
+    public AutoModePortCullis(Robot robot, Robot.Turns turn) {
         super(robot);
-        System.out.println("AutoModeDriveForwardTransferDownAimFire Constructor");
+        this.turn = turn;
+        if(turn != Robot.Turns.NoTurn)
+		{
+			turnAngle = turnAngles[turn.getIndex()];
+		}      
+        System.out.println("AutoModePortCullis Constructor");
     }    
     
     public void autoInit() {    	
@@ -69,9 +78,44 @@ public class AutoModeDriveForwardTransferDownAimFire extends AutoMode {
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;
-    				state = AutoStates.PauseForAim;
+    				if (turn == Robot.Turns.NoTurn)
+    				{
+    					state = AutoStates.PauseForAim;
+    				}
+    				else
+    				{
+    					state = AutoStates.Turn;
+    				}
     			}
     			break;    		
+    			
+    		case Turn:
+    			if(lastDriveForwardEventTime == 0) { 
+    				lastDriveForwardEventTime = System.currentTimeMillis();
+    			}
+    			
+    			if (turnAngle > 0) 
+    			{
+    				// turn right
+	    			robot.drive.tankDrive(-0.75,0.75);
+	    			if(robot.locator.GetHeading() > turnAngle || System.currentTimeMillis() - lastDriveForwardEventTime > turnTimeout) {
+	    				robot.drive.tankDrive(0,0);
+	    				lastDriveForwardEventTime = 0;
+	    				state = AutoStates.PauseForAim;
+	    			}
+    			}
+    			else
+    			{
+    				//turn left
+    				robot.drive.tankDrive(0.75,-0.75);
+	    			if(robot.locator.GetHeading() < (360 + turnAngle) || System.currentTimeMillis() - lastDriveForwardEventTime > turnTimeout) {
+	    				robot.drive.tankDrive(0,0);
+	    				lastDriveForwardEventTime = 0;
+	    				state = AutoStates.PauseForAim;
+	    			}
+    			}
+    			break;
+    			
     		case PauseForAim:
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
@@ -82,10 +126,12 @@ public class AutoModeDriveForwardTransferDownAimFire extends AutoMode {
     				state = AutoStates.Aim;
     			}
     			break;
+    			
     		case Aim:
     			aimNow = true;
     			state = AutoStates.Fire;
     			break;
+    			
     		case Fire:	
     			aimNow = false;
     			if(robot.catapult.getState() == catapultStates.ReadyToFire)
@@ -94,6 +140,7 @@ public class AutoModeDriveForwardTransferDownAimFire extends AutoMode {
     				state = AutoStates.Stop;
     			}
     			break; 
+    			
     		case Stop:
     		default:
     			robot.drive.tankDrive(0,0);

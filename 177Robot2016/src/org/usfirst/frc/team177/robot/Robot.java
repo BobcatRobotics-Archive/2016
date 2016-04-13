@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -44,10 +43,33 @@ public class Robot extends IterativeRobot {
     final String driveForwardTransferTurnAndFireVision = "Low Bar Transfer Turn And Fire with Vision";
     final String driveForwardTransferTurnAndFireVisionBackup  = "Low Bar Transfer Turn And Fire with Vision Then Backup";
     
-    final String driveForwardTransferDownAimFire = "Drive forward, Transfer Down, Aim, Fire";
+    final String portCullis = "Portcullis, Aim, Fire";
+    
+    final String turnNoTurn = "No Turn";
+    final String turnFrom2 = "Turn From 2";
+    final String turnFrom3 = "Turn From 3";
+    final String turnFrom4 = "Turn From 4";
+    final String turnFrom5 = "Turn From 5";
+    
+    public enum Turns {
+		NoTurn(-1),
+		TurnFrom2(0),
+		TurnFrom3(1),
+		TurnFrom4(2),
+		TurnFrom5(3);
+    	
+    	int index;
+    	Turns(int i) {
+    		index = i;
+    	}
+    	public int getIndex() {
+    		return index;
+    	}
+    };
   
     String autoSelected;
-    SendableChooser chooser;
+    SendableChooser autoChooser;
+    SendableChooser turnChooser;
 	    
     /**Motor constants**/
 	private static final int MotorDriveRL = 3;//Rear Left 888
@@ -156,6 +178,7 @@ public class Robot extends IterativeRobot {
     
     /* Automode Variables */
     String autoMode = "";
+    Turns lastTurnSelected = Turns.NoTurn;
     double autoDelay = 0;    
     AutoMode auto;
     long autoStartTime;
@@ -167,21 +190,28 @@ public class Robot extends IterativeRobot {
      * used for any initialization code.
      */
     public void robotInit() {
-        chooser = new SendableChooser();
-        chooser.addDefault(doNothing, 									doNothing);
-        chooser.addObject(driveForwardTransferUp, 						driveForwardTransferUp);
-        chooser.addObject(driveForwardTransferUpShort,					driveForwardTransferUpShort);
-        chooser.addObject(driveForwardOverObsticalWithVision,			driveForwardOverObsticalWithVision);
-        chooser.addObject(driveForwardOverObsticalWithVisionShort, 		driveForwardOverObsticalWithVisionShort);
-        chooser.addObject(lowBar, 										lowBar);
-        chooser.addObject(lowBarWithVision, 							lowBarWithVision);
-        chooser.addObject(chevalDeFrise, 								chevalDeFrise);
-        chooser.addObject(chevalDeFriseFire, 							chevalDeFriseFire);
-        chooser.addObject(driveForwardTransferTurnAndFireVision,    	driveForwardTransferTurnAndFireVision);
-        chooser.addObject(driveForwardTransferTurnAndFireVisionBackup, 	driveForwardTransferTurnAndFireVisionBackup);
-        chooser.addObject(driveForwardTransferDownAimFire,				driveForwardTransferDownAimFire);
+        autoChooser = new SendableChooser();
+        autoChooser.addDefault(doNothing, 									doNothing);
+        autoChooser.addObject(driveForwardTransferUp, 						driveForwardTransferUp);
+        autoChooser.addObject(driveForwardTransferUpShort,					driveForwardTransferUpShort);
+        autoChooser.addObject(driveForwardOverObsticalWithVision,			driveForwardOverObsticalWithVision);
+        autoChooser.addObject(driveForwardOverObsticalWithVisionShort, 		driveForwardOverObsticalWithVisionShort);
+        autoChooser.addObject(lowBar, 										lowBar);
+        autoChooser.addObject(lowBarWithVision, 							lowBarWithVision);
+        autoChooser.addObject(chevalDeFrise, 								chevalDeFrise);
+        autoChooser.addObject(chevalDeFriseFire, 							chevalDeFriseFire);
+        autoChooser.addObject(driveForwardTransferTurnAndFireVision,    	driveForwardTransferTurnAndFireVision);
+        autoChooser.addObject(driveForwardTransferTurnAndFireVisionBackup, 	driveForwardTransferTurnAndFireVisionBackup);
+        autoChooser.addObject(portCullis,									portCullis);
         
-        SmartDashboard.putData("Auto choices", chooser);
+        SmartDashboard.putData("Auto choices", autoChooser);
+        
+        turnChooser.addDefault(turnNoTurn, Turns.NoTurn);
+        turnChooser.addObject(turnFrom2, Turns.TurnFrom2);
+        turnChooser.addObject(turnFrom3, Turns.TurnFrom3);
+        turnChooser.addObject(turnFrom4, Turns.TurnFrom4);
+        turnChooser.addObject(turnFrom5, Turns.TurnFrom5);
+        SmartDashboard.putData("Turn choices (PC and CDF)", turnChooser);
         
         String climbTip = null;
 		SmartDashboard.putString(climbTip, "Pickup up,full speed at tower.  \n Let go of pickup.  \n Flip Missile Switch. \n Left Stick down.   \n Press and HOLD pickup as soon as robot is no longer touching the ground while winching." );
@@ -241,9 +271,10 @@ public class Robot extends IterativeRobot {
 			visionTestTimer = System.currentTimeMillis();
 		}
 	*/
-    	autoSelected = (String) chooser.getSelected();		
+    	autoSelected = (String) autoChooser.getSelected();		
+    	Turns turnSelected = (Turns) turnChooser.getSelected();
 
-		if(!autoSelected.equals(autoMode))
+		if(!autoSelected.equals(autoMode) || !turnSelected.equals(lastTurnSelected))
 		{
 			switch(autoSelected) {
 	    		case driveForwardTransferUp:
@@ -265,10 +296,10 @@ public class Robot extends IterativeRobot {
 	    			auto = new AutoModeDriveForwardTurnAndFireWithVision(this);
 	    			break;
 	    		case chevalDeFrise:
-	    			auto = new AutoModeChevalDeFrise(this, false);
+	    			auto = new AutoModeChevalDeFrise(this, false, turnSelected);
 	    			break;
 	    		case chevalDeFriseFire:
-	    			auto = new AutoModeChevalDeFrise(this, true);
+	    			auto = new AutoModeChevalDeFrise(this, true, turnSelected);
 	    			break;
 	    		case driveForwardTransferTurnAndFireVision:
 	    			auto = new AutoModeDriveForwardTurnAndFireWithVisionTransfer(this, false);
@@ -276,8 +307,8 @@ public class Robot extends IterativeRobot {
 	    		case driveForwardTransferTurnAndFireVisionBackup:
 	    			auto = new AutoModeDriveForwardTurnAndFireWithVisionTransfer(this, true);
 	    			break;	   
-	    		case driveForwardTransferDownAimFire:
-	    			auto = new AutoModeDriveForwardTransferDownAimFire(this);
+	    		case portCullis:
+	    			auto = new AutoModePortCullis(this, turnSelected);
 	    			break;	    				    			
 	    		case doNothing:
 	        	default:
@@ -286,6 +317,7 @@ public class Robot extends IterativeRobot {
 	                break;        	
 			}
 			autoMode = autoSelected;
+			lastTurnSelected = turnSelected;
 		}
 		
 		autoDelay = switchPanel.getX()*100;

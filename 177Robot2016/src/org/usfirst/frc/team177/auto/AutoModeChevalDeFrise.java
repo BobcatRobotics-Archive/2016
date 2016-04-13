@@ -10,29 +10,40 @@ public class AutoModeChevalDeFrise extends AutoMode {
 	enum AutoStates {
 		DriveForward,
 		PutPickupDown,
+		Turn,
 		Pause,
 		Aim,
 		Fire,
-		Stop
-		
+		Stop		
 	}
 	
 	private AutoStates state;
 	long lastEventTime;
 	int driveCount; //iterates so that I dont have duplicate cases
 	//Constants
-	double firstDriveForwardDelay = 1250; //untested
-	double pickupDownDelay = 3000; //untested
-	double secondDriveForwardDelay = 2500; //untested
-
+	private static final double firstDriveForwardDelay = 1250;
+	private static final double pickupDownDelay = 3000;
+	private static final double secondDriveForwardDelay = 2500;
+	
+	private static final double[] turnAngles = {30, 10, -10, -20}; //guesses
+	private static final int turnTimeout = 3000;
+	Robot.Turns turn;	
+    double turnAngle = 0;
+	
     boolean fireNow = false;
     boolean aimNow = false;
     
     boolean fireAfterCrossing;
-	
-	public AutoModeChevalDeFrise(Robot robot, boolean fireAfterCrossing) {
+    
+    
+	public AutoModeChevalDeFrise(Robot robot, boolean fireAfterCrossing, Robot.Turns turn) {
 		super(robot);
 		this.fireAfterCrossing = fireAfterCrossing;
+		this.turn = turn;
+		if(turn != Robot.Turns.NoTurn)
+		{
+			turnAngle = turnAngles[turn.getIndex()];
+		}
 		System.out.println("AutoModeChevalDeFrise Constructor");
 	}
 	
@@ -65,7 +76,14 @@ public class AutoModeChevalDeFrise extends AutoMode {
 					lastEventTime = 0;
 					robot.shiftPneumatic.set(true); // High gear
 					if (fireAfterCrossing) {
-						state = AutoStates.Pause;
+						if (turn == Robot.Turns.NoTurn)
+						{
+							state = AutoStates.Pause;	
+						}
+						else
+						{							
+							state = AutoStates.Turn;
+						}
 					} else {
 						state = AutoStates.Stop;
 					}
@@ -83,6 +101,34 @@ public class AutoModeChevalDeFrise extends AutoMode {
 				state = AutoStates.DriveForward;				
 			}
 			break;
+			
+		case Turn:
+			if(lastEventTime == 0) { 
+				lastEventTime = System.currentTimeMillis();
+			}
+			
+			if (turnAngle > 0) 
+			{
+				// turn right
+    			robot.drive.tankDrive(-0.75,0.75);
+    			if(robot.locator.GetHeading() > turnAngle || System.currentTimeMillis() - lastEventTime > turnTimeout) {
+    				robot.drive.tankDrive(0,0);
+    				lastEventTime = 0;
+    				state = AutoStates.Pause;
+    			}
+			}
+			else
+			{
+				//turn left
+				robot.drive.tankDrive(0.75,-0.75);
+    			if(robot.locator.GetHeading() < (360 + turnAngle) || System.currentTimeMillis() - lastEventTime > turnTimeout) {
+    				robot.drive.tankDrive(0,0);
+    				lastEventTime = 0;
+    				state = AutoStates.Pause;
+    			}
+			}
+			break;	
+			
 		case Pause:
 			if(lastEventTime == 0) { 
 				lastEventTime = System.currentTimeMillis();

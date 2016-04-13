@@ -30,7 +30,8 @@ public class Vision {
 	private boolean openCVisGood = true;
 	
 	//Change this to false to disable looking for the reference triangle.
-	private static final boolean useReferenceTarget = true; 	
+	private static final boolean useReferenceTarget = false;
+	
 	private static final int referenceMinPixel = 200; // don't look for the reference above this point.
 	private static final double minReferenceWidth = 20;
 	private static final double referenceExpectedAspect = 1.7;

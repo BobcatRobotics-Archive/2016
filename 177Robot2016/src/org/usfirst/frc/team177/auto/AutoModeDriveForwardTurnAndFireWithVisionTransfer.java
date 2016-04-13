@@ -126,7 +126,7 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     				state = AutoStates.PauseForAim;
     			}
     			break;
-    		case DriveForwardAgain:
+    		case DriveForwardAgain:  //not currently used
     			if(lastDriveForwardEventTime == 0) {
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
@@ -167,10 +167,10 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > pauseForFireDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;    				
-    				state = backup ? AutoStates.BackupTurn : AutoStates.Stop;
+    				state = (backup && (robot.locator.GetHeading() > turnHeading/2)) ? AutoStates.BackupTurn : AutoStates.Stop;
     			}
     			break;    			
-    		case Backup:
+    		case Backup:  //not currently used
     			if(lastDriveForwardEventTime == 0) {
     				lastDriveForwardEventTime = System.currentTimeMillis();
     				robot.shiftPneumatic.set(false); //low gear
