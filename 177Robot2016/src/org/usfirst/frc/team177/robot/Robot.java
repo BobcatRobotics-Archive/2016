@@ -206,11 +206,11 @@ public class Robot extends IterativeRobot {
         
         SmartDashboard.putData("Auto choices", autoChooser);
         
-        turnChooser.addDefault(turnNoTurn, Turns.NoTurn);
-        turnChooser.addObject(turnFrom2, Turns.TurnFrom2);
-        turnChooser.addObject(turnFrom3, Turns.TurnFrom3);
-        turnChooser.addObject(turnFrom4, Turns.TurnFrom4);
-        turnChooser.addObject(turnFrom5, Turns.TurnFrom5);
+        turnChooser.addDefault(turnNoTurn, turnNoTurn);
+        turnChooser.addObject(turnFrom2, turnFrom2);
+        turnChooser.addObject(turnFrom3, turnFrom3);
+        turnChooser.addObject(turnFrom4, turnFrom4);
+        turnChooser.addObject(turnFrom5, turnFrom5);
         SmartDashboard.putData("Turn choices (PC and CDF)", turnChooser);
         
         String climbTip = null;
@@ -272,7 +272,28 @@ public class Robot extends IterativeRobot {
 		}
 	*/
     	autoSelected = (String) autoChooser.getSelected();		
-    	Turns turnSelected = (Turns) turnChooser.getSelected();
+    	String turnChoice = (String) turnChooser.getSelected();
+    	
+    	Turns turnSelected;
+    	switch (turnChoice) {
+    		
+    		case turnFrom2:
+    			turnSelected = Turns.TurnFrom2;
+    			break;	
+    		case turnFrom3:
+    			turnSelected = Turns.TurnFrom3;
+    			break;	
+    		case turnFrom4:
+    			turnSelected = Turns.TurnFrom4;
+    			break;	
+    		case turnFrom5:
+    			turnSelected = Turns.TurnFrom5;
+    			break;	
+    		case turnNoTurn:
+    		default:
+    			turnSelected = Turns.NoTurn;
+    			break;			
+    	}
 
 		if(!autoSelected.equals(autoMode) || !turnSelected.equals(lastTurnSelected))
 		{
