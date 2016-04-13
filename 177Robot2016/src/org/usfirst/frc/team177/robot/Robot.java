@@ -309,8 +309,13 @@ public class Robot extends IterativeRobot {
     	double left = leftStick.getRawAxis(axisY);
 		double right = rightStick.getRawAxis(axisY);
 		//uncomment this line to disable driver input while auto aiming also put in the braces
-		//if (catapult.getState() != catapultStates.Aiming)
+		if (catapult.getState() == catapultStates.Aiming && (Math.abs(left) > 0.25 || Math.abs(right) > 0.25) || operatorStick.getRawButton(3) )
+		{
+			catapult.cancelAim();
+		}
+	    
 		drive.tankDrive(left, right);
+		
 		
 		//General Controls
 		if (catapult.getState() != catapultStates.Aiming)

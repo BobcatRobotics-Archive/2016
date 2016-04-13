@@ -32,10 +32,10 @@ public class Vision {
 	//Change this to false to disable looking for the reference triangle.
 	private static final boolean useReferenceTarget = true; 	
 	private static final int referenceMinPixel = 200; // don't look for the reference above this point.
-	private static final double minReferenceWidth = 10;
-	private static final double referenceExpectedAspect = 1.25;
+	private static final double minReferenceWidth = 20;
+	private static final double referenceExpectedAspect = 1.7;
 	private static final double referenceAspectTheshold = 0.5;
-	private static final int defaultReferenceTargetOffset = 0; //tweak this on robot 
+	private static final int defaultReferenceTargetOffset = 8; //tweak this on robot 
 	
 	//change this to false to disable doing the polygon approximation
 	private static final boolean usePolygonApproximation = true;
@@ -151,12 +151,16 @@ public class Vision {
 		return accum;
 	}		
 	
-	public double getBearing() {		
+	public double getBearing() {
+		return getBearing(false);
+	}
+	
+	public double getBearing(boolean force) {		
 		
 		if (!openCVisGood) return BAD_BEARING;
 		
 		//If the analysis isn't current update.
-		if ((System.nanoTime() - lastProccessTime)/1000000 > 66)
+		if (force || (System.nanoTime() - lastProccessTime)/1000000 > 66)
 		{
 			UpdateAnalysis(false);
 		}
@@ -232,7 +236,7 @@ public class Vision {
 		List<MatOfPoint> interestingReferenceBlobs = new ArrayList<MatOfPoint>();	
 							
 		// Only retain pixels where G > 100		
-		Core.inRange(Image, new Scalar(0, 100, 0), new Scalar(255, 255, 255), IMask);
+		Core.inRange(Image, new Scalar(0, 150, 0), new Scalar(255, 255, 255), IMask);
 	
 		// Convert to HSV and apply threshold		
 		/*Mat hsv = new Mat();
@@ -256,10 +260,14 @@ public class Vision {
 					//only add shapes with 8 sides
 					contours.get(i).convertTo(contour, CvType.CV_32FC2);
 					Imgproc.approxPolyDP(contour, approx, 3, true);			
-					if(approx.rows() == 8)
+					if(approx.rows() >= 7 && approx.rows() <= 9 )
 					{			
 						interestingBlobs.add(BB);
-					}				
+					}	
+					/*else
+					{
+						System.out.println("Rejecting: " + BB.x + "x" + BB.y + " " + approx.rows());
+					}*/
 				} else {
 					interestingBlobs.add(BB);
 				}					
@@ -322,7 +330,8 @@ public class Vision {
 				referenceTarget.clear();
 				referenceTarget.add(0, tmpPt);
 				Rect BB = Imgproc.boundingRect(interestingReferenceBlobs.get(maxReferenceIdx));
-				referenceTargetOffset = (BB.x + (BB.width/2)) - (Image.cols()/2) - defaultReferenceTargetOffset;			
+				referenceTargetOffset = (BB.x + (BB.width/2)) - (Image.cols()/2) - defaultReferenceTargetOffset;
+				//System.out.println("Reference: " + BB.width + "x" + BB.height + " " + (double)BB.width/BB.height );
 			} 
 			else
 			{
@@ -384,20 +393,20 @@ public class Vision {
 				Imgproc.rectangle(frame, target.tl(), target.br() , new Scalar(0, 0, 255, 255), 4);
 			}
 			//Add bearing text
-			Imgproc.putText(frame, String.format("Bearing %f", bearing),  new Point(100,460), Core.FONT_HERSHEY_PLAIN, 2,  new Scalar(255,255,255,255));
+			Imgproc.putText(frame, String.format("Bearing %.3f", bearing),  new Point(10,460), Core.FONT_HERSHEY_PLAIN, 2,  new Scalar(255,255,255,255));
 			
 			if(useReferenceTarget && !referenceTarget.isEmpty())
 			{
-				Imgproc.drawContours(frame, referenceTarget, 0, new Scalar(255, 0, 0, 255), 1);
+				Imgproc.drawContours(frame, referenceTarget, 0, new Scalar(255, 0, 0, 255), 3);
 				//add reference 
-				Imgproc.putText(frame, String.format("Reference %d", referenceTargetOffset),  new Point(100,470), Core.FONT_HERSHEY_PLAIN, 2,  new Scalar(255,255,255,255));
+				Imgproc.putText(frame, String.format("R %d", referenceTargetOffset),  new Point(400,460), Core.FONT_HERSHEY_PLAIN, 2,  new Scalar(255,255,255,255));
 			}
 
 			synchronized(saveImageLock) {
 				frame.copyTo(saveImage);
 			}
 		}						
-		System.out.println("AnalyzeTarget execution time: " + (System.currentTimeMillis() - startTime));
+		//System.out.println("AnalyzeTarget execution time: " + (System.currentTimeMillis() - startTime));
 		
 		return success;		
 	}
@@ -430,7 +439,7 @@ public class Vision {
 
 				captureImage();
 
-				if(lastFrame != null){
+				if(lastFrame != null && lastCapture != null){
 					synchronized(lastCaptureLock){
 						lastFrame.copyTo(lastCapture);
 						lastCaptureTime = System.nanoTime();
@@ -518,7 +527,7 @@ public class Vision {
 				}			
 				try {
 					long runTime = (System.nanoTime() - startTime)/1000000;
-					System.out.println("DS Thread: " + runTime);
+					//System.out.println("DS Thread: " + runTime);
 					if(runTime < 1000) {
 						Thread.sleep(1000 - runTime); //Process at 1Hz
 					}

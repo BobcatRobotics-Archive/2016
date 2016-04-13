@@ -21,6 +21,8 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
 		Fire,
 		PauseForFire,
 		Backup,
+		BackupTurn,
+		BackupAgain,
 		Stop
 	};
 	
@@ -34,7 +36,8 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     double turnDelay = 3000;
     double pauseForAimDelay = 1000;
     double driveForwardAgainDelay = 750;
-    double backupDelay = 2000;
+    double backupDelay = driveForwardAgainDelay;
+    double backupAgainDelay = 1250; //750 stops just before low bar on PB
     double pauseForFireDelay = 500;
     
     boolean fireNow = false;
@@ -99,8 +102,18 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
-    			robot.rollerTopMotor.set(-1);
-    			robot.rollerSideMotor.set(-1);
+    			if(System.currentTimeMillis() - lastDriveForwardEventTime < 750)
+    			{
+    				robot.rollerTopMotor.set(-1);
+    				robot.rollerSideMotor.set(-1);
+    			}
+    			else
+    			{
+    				robot.rollerTopMotor.set(0);
+        			robot.rollerSideMotor.set(0);
+        			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
+    			}
+    			
     			//robot.drive.tankDrive(-0.75,0.75);
     			robot.drive.tankDrive(-0.75,-0.25); //attempt to curve away from side wall
     			if((robot.locator.GetHeading() > turnHeading && robot.locator.GetHeading() < 180) || System.currentTimeMillis() - lastDriveForwardEventTime > turnDelay) {
@@ -109,7 +122,8 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     				robot.drive.tankDrive(0,0);
     				robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
     				lastDriveForwardEventTime = 0;
-    				state = AutoStates.DriveForwardAgain;
+    				//state = AutoStates.DriveForwardAgain;
+    				state = AutoStates.PauseForAim;
     			}
     			break;
     		case DriveForwardAgain:
@@ -148,19 +162,44 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     		case PauseForFire:
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
+    				fireNow = false;
     			}		
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > pauseForFireDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;    				
-    				state = backup ? AutoStates.Backup : AutoStates.Stop;
+    				state = backup ? AutoStates.BackupTurn : AutoStates.Stop;
     			}
     			break;    			
     		case Backup:
     			if(lastDriveForwardEventTime == 0) {
     				lastDriveForwardEventTime = System.currentTimeMillis();
+    				robot.shiftPneumatic.set(false); //low gear
     			}
     			robot.drive.tankDrive(0.75, 0.75);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > backupDelay) {
+    				robot.drive.tankDrive(0, 0);
+    				lastDriveForwardEventTime = 0;
+    				state = AutoStates.BackupTurn;
+    			}
+    			break;
+    		case BackupTurn:
+    			if(lastDriveForwardEventTime == 0) { 
+    				lastDriveForwardEventTime = System.currentTimeMillis();
+    			}   			
+    			//robot.drive.tankDrive(0.75,0.25); //working ok, but hitting outside wall on PB
+    			robot.drive.tankDrive(0.85,0.20);
+    			if((robot.locator.GetHeading() > -5 && robot.locator.GetHeading() < 5) || System.currentTimeMillis() - lastDriveForwardEventTime > turnDelay) {
+    				robot.drive.tankDrive(0,0);
+    				lastDriveForwardEventTime = 0;
+    				state = AutoStates.BackupAgain;
+    			}
+    			break;
+    		case BackupAgain:
+    			if(lastDriveForwardEventTime == 0) {
+    				lastDriveForwardEventTime = System.currentTimeMillis();
+    			}
+    			robot.drive.tankDrive(0.75, 0.75);
+    			if(System.currentTimeMillis() - lastDriveForwardEventTime > backupAgainDelay) {
     				robot.drive.tankDrive(0, 0);
     				lastDriveForwardEventTime = 0;
     				state = AutoStates.Stop;

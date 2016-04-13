@@ -8,17 +8,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Catapult {
 
-	private static final boolean usePIDForAim = false;
-	private static final boolean useLoopOnAim = true;
+	private static final boolean usePIDForAim = true;
+	private static final boolean useLoopOnAim = false;
 	private static final int loopOnAimMaxLoop = 2;
 	private int loopOnAimLoopCount;
 	
 	private BasicPIDController SteerPID;
-    private static double SteerP 	= 0.1;    //Proportial gain for Steering System
-    private static double SteerI 	= 0.001;  //Integral gain for Steering System
+    private static double SteerP 	= 0.5;    //Proportial gain for Steering System
+    private static double SteerI 	= 1;  //Integral gain for Steering System
     private static double SteerD 	= 0.00;   //Derivative gain for Steering System
-    private static double SteerMax 	= 1;   	  //Max Saturation value for control
-    private static double SteerMin 	= -1;     //Min Saturation value for control
+    private static double SteerMax 	= 0.75;   	  //Max Saturation value for control
+    private static double SteerMin 	= -0.75;     //Min Saturation value for control
     
     private long lastRanSteerPID;
 	
@@ -41,12 +41,13 @@ public class Catapult {
     private catapultStates catapultState = catapultStates.PreparingToFire;
     private static final double stateDelay = 1000; //ms
     private static final double aimTimeout = 2500; //ms   
-    private static final double aimThreshold = 0.5; //+/- 1 degrees == on target
+    private static final double aimThreshold = 0.25; //+/- 0.25 degrees == on target
     private static final double turnSpeed = 0.75;
-    private static final double bearingFudgeFactor = 4;  //negative is left
+    private static final double bearingFudgeFactor = -1;  //negative is left
     		
     private long lastShooterEventTime = 0;
     private double targetHeading = 0;
+    private boolean cancelAim = false;
     
     // definitions to improve code readability
     //latch pneumatic states
@@ -70,6 +71,11 @@ public class Catapult {
     public void loop(boolean fire)
     {
     	loop(fire, false);
+    }
+    
+    public void cancelAim()
+    {
+    	cancelAim = true;
     }
     
     public void loop(boolean fire, boolean aimThenFire)
@@ -162,6 +168,8 @@ public class Catapult {
 				lastShooterEventTime = System.currentTimeMillis();		
 				
 				robot.shiftPneumatic.set(true); //high gear
+				
+				cancelAim = false;
 			}
 			
 			double targetBearing = targetHeading - robot.locator.GetHeading();
@@ -177,7 +185,8 @@ public class Catapult {
 		        double dT = (now - lastRanSteerPID)/1000.0; //dT in seconds
 		        lastRanSteerPID = now;
 				double steer = SteerPID.calculate(targetBearing, dT);
-				robot.drive.tankDrive(steer, -steer);
+				System.out.println("PID: " + targetBearing + " " + steer);
+				robot.drive.tankDrive(-steer, steer);
 			}
 			else
 			{
@@ -191,7 +200,7 @@ public class Catapult {
 				}
 			}
 						
-			if(Math.abs(targetBearing) < aimThreshold || System.currentTimeMillis() - lastShooterEventTime > aimTimeout) {
+			if(cancelAim || Math.abs(targetBearing) < aimThreshold || System.currentTimeMillis() - lastShooterEventTime > aimTimeout) {
 				if(Math.abs(targetBearing) < aimThreshold)
 				{
 					if(useLoopOnAim && ++loopOnAimLoopCount < loopOnAimMaxLoop)

@@ -24,7 +24,7 @@ public class AutoModeDriveForwardTransferDownAimFire extends AutoMode {
     long lastDriveForwardEventTime = 0;
     
     double pickupDownDelay = 1000;
-    double driveForwardDelay = 300;
+    double driveForwardDelay = 3000;
     double pauseForAimDelay = 1000;
     
     double driveForwardSpeed = -0.75;
