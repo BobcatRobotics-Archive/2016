@@ -23,8 +23,8 @@ public class AutoModePortCullis extends AutoMode {
     long lastDriveForwardEventTime = 0;
     
     double pickupDownDelay = 1000;
-    double driveForwardDelay = 3000;
-    double pauseForAimDelay = 1000;
+    double driveForwardDelay = 3500;
+    double pauseForAimDelay = 3000;
     
     double driveForwardSpeed = -0.75;
         

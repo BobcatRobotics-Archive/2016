@@ -47,7 +47,7 @@ public class Vision {
 	static final double minTargetWidth = 20;		
 	static final double expectedAspect = 5.0/3.0;
 	static final double aspectTheshold = 0.3;
-	static final int cameraIndex	= 0; //should be 0 on robot?
+	static final int cameraIndex	= 1; //should be 0 on robot?
 	
 	public final double BAD_BEARING = 999;
 	

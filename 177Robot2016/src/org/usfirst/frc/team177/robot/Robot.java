@@ -423,6 +423,7 @@ public class Robot extends IterativeRobot {
 			switch(climbState) {
 			case Stowed:
 				climbFourBarPneumatic.set(false);
+				climbPancakePneumatic.set(false);
 				winchMotor.set(0);
 				if(switchPanel.getRawButton(4)) {
 					climbState = climbStates.PancakeOut;
