@@ -21,11 +21,11 @@ public class AutoModeChevalDeFrise extends AutoMode {
 	long lastEventTime;
 	int driveCount; //iterates so that I dont have duplicate cases
 	//Constants
-	private static final double firstDriveForwardDelay = 1250;
-	private static final double pickupDownDelay = 3000;
-	private static final double secondDriveForwardDelay = 2500;
+	private static final double firstDriveForwardDelay = 1700;
+	private static final double pickupDownDelay = 1500;
+	private static final double secondDriveForwardDelay = 4000;
 	
-	private static final double[] turnAngles = {30, 10, -10, -20}; //guesses
+	private static final double[] turnAngles = {30, 10, -15, -20}; //guesses
 	private static final int turnTimeout = 3000;
 	Robot.Turns turn;	
     double turnAngle = 0;
@@ -62,7 +62,7 @@ public class AutoModeChevalDeFrise extends AutoMode {
 				lastEventTime = System.currentTimeMillis();
 			}
 			if (driveCount == 1) { //first driveforward
-				robot.drive.tankDrive(-0.75, -0.75);
+				robot.drive.tankDrive(-0.75, -0.70);
 				if (System.currentTimeMillis() - lastEventTime > firstDriveForwardDelay) {
 					robot.drive.tankDrive(0, 0);
 					lastEventTime = 0;
@@ -70,7 +70,7 @@ public class AutoModeChevalDeFrise extends AutoMode {
 					state = AutoStates.PutPickupDown;
 				} 
 			} else { //second driveforward
-				robot.drive.tankDrive(-0.75,-0.75);
+				robot.drive.tankDrive(-0.75,-0.7);
 				if (System.currentTimeMillis() - lastEventTime > secondDriveForwardDelay) {
 					robot.drive.tankDrive(0,0);
 					lastEventTime = 0;
@@ -121,7 +121,7 @@ public class AutoModeChevalDeFrise extends AutoMode {
 			{
 				//turn left
 				robot.drive.tankDrive(0.75,-0.75);
-    			if(robot.locator.GetHeading() < (360 + turnAngle) || System.currentTimeMillis() - lastEventTime > turnTimeout) {
+    			if((robot.locator.GetHeading() < (360 + turnAngle) && (robot.locator.GetHeading() > 180)) || System.currentTimeMillis() - lastEventTime > turnTimeout) {
     				robot.drive.tankDrive(0,0);
     				lastEventTime = 0;
     				state = AutoStates.Pause;
@@ -140,8 +140,15 @@ public class AutoModeChevalDeFrise extends AutoMode {
 			}
 			break;
 		case Aim:
-			aimNow = true;
-			state = AutoStates.Fire;
+			//if (robot.vision.getBearing() != robot.vision.BAD_BEARING)
+			{
+				aimNow = true;
+				state = AutoStates.Fire;
+			}
+			/*else
+			{
+				state = AutoStates.Stop;
+			}*/
 			break;
 		case Fire:	
 			aimNow = false;

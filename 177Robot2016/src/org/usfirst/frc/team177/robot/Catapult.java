@@ -43,7 +43,7 @@ public class Catapult {
     private static final double aimTimeout = 2500; //ms   
     private static final double aimThreshold = 0.25; //+/- 0.25 degrees == on target
     private static final double turnSpeed = 0.75;
-    private static final double bearingFudgeFactor = -3;  //negative is left
+    private static final double bearingFudgeFactor = 0.5;  //negative is left
     		
     private long lastShooterEventTime = 0;
     private double targetHeading = 0;

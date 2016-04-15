@@ -36,18 +36,18 @@ public class Vision {
 	private static final double minReferenceWidth = 20;
 	private static final double referenceExpectedAspect = 1.7;
 	private static final double referenceAspectTheshold = 0.5;
-	private static final int defaultReferenceTargetOffset = 8; //tweak this on robot 
+	private static final int defaultReferenceTargetOffset = 0; //tweak this on robot 
 	
 	//change this to false to disable doing the polygon approximation
-	private static final boolean usePolygonApproximation = true;
+	private static final boolean usePolygonApproximation = false;
 	
 	public List<MatOfPoint> referenceTarget = new ArrayList<MatOfPoint>(); //for updating image
 	int referenceTargetOffset = 0;	
 	
 	static final double minTargetWidth = 20;		
 	static final double expectedAspect = 5.0/3.0;
-	static final double aspectTheshold = 0.3;
-	static final int cameraIndex	= 1; //should be 0 on robot?
+	static final double aspectTheshold = 0.6;
+	static final int cameraIndex	= 0; //should be 0 on robot?
 	
 	public final double BAD_BEARING = 999;
 	
@@ -237,7 +237,7 @@ public class Vision {
 		List<MatOfPoint> interestingReferenceBlobs = new ArrayList<MatOfPoint>();	
 							
 		// Only retain pixels where G > 100		
-		Core.inRange(Image, new Scalar(0, 150, 0), new Scalar(255, 255, 255), IMask);
+		Core.inRange(Image, new Scalar(0, 100, 0), new Scalar(255, 255, 255), IMask);
 	
 		// Convert to HSV and apply threshold		
 		/*Mat hsv = new Mat();
@@ -255,7 +255,10 @@ public class Vision {
 			Rect BB = Imgproc.boundingRect(contours.get(i));
 			double aspectRatio = BB.width / (double) BB.height;
 
-			if (BB.width >= minTargetWidth && Math.abs(aspectRatio - expectedAspect) <= aspectTheshold) {
+			
+			
+			if (BB.width >= minTargetWidth && Math.abs(aspectRatio - expectedAspect) <= aspectTheshold 
+					/*&& !((BB.x < (Image.cols()/4)) && (BB.y > (Image.rows()/2)))*/) { //exclude lower left corner (ball)
 				if(usePolygonApproximation)
 				{
 					//only add shapes with 8 sides

@@ -6,12 +6,13 @@ import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
-public class AutoModePortCullis extends AutoMode {
+public class AutoModePortCullisTransfer extends AutoMode {
     
 	enum AutoStates {
 		PutPickupDown,
 		DriveForward,
 		Turn,
+		Transfer,
 		PauseForAim,
 		Aim,
 		Fire,
@@ -23,7 +24,7 @@ public class AutoModePortCullis extends AutoMode {
     long lastDriveForwardEventTime = 0;
     
     double pickupDownDelay = 1000;
-    double driveForwardDelay = 2500;
+    double driveForwardDelay = 2000;
     double pauseForAimDelay = 3000;
     
     double driveForwardSpeed = -1.0;
@@ -31,12 +32,12 @@ public class AutoModePortCullis extends AutoMode {
     boolean fireNow = false;
     boolean aimNow = false;
     
-    private static final double[] turnAngles = {30, 5, -5, -20}; //guesses
+    private static final double[] turnAngles = {30, 5, -10, -20}; //guesses
 	private static final int turnTimeout = 3000;
 	Robot.Turns turn;	
     double turnAngle = 0;
 
-    public AutoModePortCullis(Robot robot, Robot.Turns turn) {
+    public AutoModePortCullisTransfer(Robot robot, Robot.Turns turn) {
         super(robot);
         this.turn = turn;
         if(turn != Robot.Turns.NoTurn)
@@ -74,14 +75,7 @@ public class AutoModePortCullis extends AutoMode {
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
     			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
-    			if (System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay*0.75)
-    			{
-    				robot.drive.tankDrive(driveForwardSpeed*0.75, driveForwardSpeed*0.75);
-    			}
-    			else 
-    			{
-    				robot.drive.tankDrive(driveForwardSpeed, driveForwardSpeed-0.05);
-    			}
+    			robot.drive.tankDrive(driveForwardSpeed, driveForwardSpeed);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;
@@ -100,6 +94,9 @@ public class AutoModePortCullis extends AutoMode {
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
+    			robot.transferPneumatic.set(DoubleSolenoid.Value.kForward);
+    			robot.rollerTopMotor.set(-1);
+    			robot.rollerSideMotor.set(-1);
     			
     			if (turnAngle > 0) 
     			{
@@ -115,7 +112,7 @@ public class AutoModePortCullis extends AutoMode {
     			{
     				//turn left
     				robot.drive.tankDrive(0.75,-0.75);
-	    			if((robot.locator.GetHeading() < (360 + turnAngle) && (robot.locator.GetHeading() > 180)) || System.currentTimeMillis() - lastDriveForwardEventTime > turnTimeout) {
+	    			if(robot.locator.GetHeading() < (360 + turnAngle) || System.currentTimeMillis() - lastDriveForwardEventTime > turnTimeout) {
 	    				robot.drive.tankDrive(0,0);
 	    				lastDriveForwardEventTime = 0;
 	    				state = AutoStates.PauseForAim;
@@ -126,8 +123,15 @@ public class AutoModePortCullis extends AutoMode {
     		case PauseForAim:
     			if(lastDriveForwardEventTime == 0) { 
     				lastDriveForwardEventTime = System.currentTimeMillis();
-    			}		
-    			if(System.currentTimeMillis() - lastDriveForwardEventTime > pauseForAimDelay) {
+    			}
+    			if (System.currentTimeMillis() - lastDriveForwardEventTime > 1500)
+    			{
+	    			robot.rollerTopMotor.set(0);
+	    			robot.rollerSideMotor.set(0);
+	    			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
+    			}
+    			
+	    		if(System.currentTimeMillis() - lastDriveForwardEventTime > pauseForAimDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;
     				state = AutoStates.Aim;
@@ -135,15 +139,8 @@ public class AutoModePortCullis extends AutoMode {
     			break;
     			
     		case Aim:
-    			if (robot.vision.getBearing() != robot.vision.BAD_BEARING)
-    			{
-	    			aimNow = true;
-	    			state = AutoStates.Fire;
-    			}
-    			else
-    			{
-    				state = AutoStates.Stop;
-    			}
+    			aimNow = true;
+    			state = AutoStates.Fire;
     			break;
     			
     		case Fire:	

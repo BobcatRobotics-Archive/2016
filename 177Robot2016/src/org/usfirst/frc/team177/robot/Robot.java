@@ -44,6 +44,7 @@ public class Robot extends IterativeRobot {
     final String driveForwardTransferTurnAndFireVisionBackup  = "Low Bar Transfer Turn And Fire with Vision Then Backup";
     
     final String portCullis = "Portcullis, Aim, Fire";
+    final String portCullisTransfer = "Portcullis, Transfer, Aim, Fire";
     
     final String turnNoTurn = "No Turn";
     final String turnFrom2 = "Turn From 2";
@@ -203,6 +204,7 @@ public class Robot extends IterativeRobot {
         autoChooser.addObject(driveForwardTransferTurnAndFireVision,    	driveForwardTransferTurnAndFireVision);
         autoChooser.addObject(driveForwardTransferTurnAndFireVisionBackup, 	driveForwardTransferTurnAndFireVisionBackup);
         autoChooser.addObject(portCullis,									portCullis);
+        autoChooser.addObject(portCullisTransfer,							portCullisTransfer);
         
         SmartDashboard.putData("Auto choices", autoChooser);
         
@@ -331,7 +333,10 @@ public class Robot extends IterativeRobot {
 	    			break;	   
 	    		case portCullis:
 	    			auto = new AutoModePortCullis(this, turnSelected);
-	    			break;	    				    			
+	    			break;	 
+	    		case portCullisTransfer:
+	    			auto = new AutoModePortCullisTransfer(this, turnSelected);
+	    			break;	 
 	    		case doNothing:
 	        	default:
 	        		//Do Nothing
@@ -345,7 +350,8 @@ public class Robot extends IterativeRobot {
 		autoDelay = switchPanel.getX()*100;
 		SmartDashboard.putNumber("Auto Delay", autoDelay);
 		SmartDashboard.putString("Auto Mode", autoMode);
-	}
+		SmartDashboard.putString("Turn From", turnChoice);
+}
     
     @SuppressWarnings("unused")
 	public void teleopInit() {
@@ -437,7 +443,7 @@ public class Robot extends IterativeRobot {
 				if(!switchPanel.getRawButton(4)) {
 					climbState = climbStates.Stowed;
 				}
-				if(System.currentTimeMillis() - climberEventTime > 500) {
+				if(System.currentTimeMillis() - climberEventTime > 100) {
 					climbState = climbStates.ArmsOut;
 					climberEventTime = 0;
 				}
@@ -451,7 +457,7 @@ public class Robot extends IterativeRobot {
 				if(!switchPanel.getRawButton(4)) {
 					climbState = climbStates.Stowed;
 				}
-				if(System.currentTimeMillis() - climberEventTime > 250) { //Magic Delay	
+				if(System.currentTimeMillis() - climberEventTime > 25) { //Magic Delay	
 					climbState = climbStates.Climb;
 					climberEventTime = 0;
 				}

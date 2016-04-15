@@ -79,7 +79,7 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     				lastDriveForwardEventTime = System.currentTimeMillis();
     			}
     			robot.transferPneumatic.set(DoubleSolenoid.Value.kReverse);
-    			robot.drive.tankDrive(-0.75,-0.75);
+    			robot.drive.tankDrive(-0.75,-0.70);
     			if(System.currentTimeMillis() - lastDriveForwardEventTime > driveForwardDelay) {
     				robot.drive.tankDrive(0,0);
     				lastDriveForwardEventTime = 0;
@@ -148,8 +148,15 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     			}
     			break;
     		case Aim:
-    			aimNow = true;
-    			state = AutoStates.Fire;
+    			if (robot.vision.getBearing() != robot.vision.BAD_BEARING)
+    			{
+    				aimNow = true;
+    				state = AutoStates.Fire;
+    			}
+    			else
+    			{
+    				state = AutoStates.PauseForFire;
+    			}
     			break;
     		case Fire:	
     			aimNow = false;
