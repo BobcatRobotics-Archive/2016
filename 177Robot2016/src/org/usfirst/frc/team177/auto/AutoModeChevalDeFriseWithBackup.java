@@ -1,19 +1,20 @@
 package org.usfirst.frc.team177.auto;
 
-import org.usfirst.frc.team177.auto.AutoModeChevalDeFriseWithBackup.AutoStates;
 import org.usfirst.frc.team177.robot.*;
 import org.usfirst.frc.team177.robot.Catapult.catapultStates;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
-public class AutoModeChevalDeFrise extends AutoMode {
+public class AutoModeChevalDeFriseWithBackup extends AutoMode {
 	
 	enum AutoStates {
 		DriveForward,
+		BackupALittle,
 		PutPickupDown,
 		Turn,
 		Pause,
 		Aim,
+		PauseBeforeFire,
 		WaitForAim,
 		Fire,
 		Stop		
@@ -23,7 +24,8 @@ public class AutoModeChevalDeFrise extends AutoMode {
 	long lastEventTime;
 	int driveCount; //iterates so that I dont have duplicate cases
 	//Constants
-	private static final double firstDriveForwardDelay = 1700;
+	private static final double firstDriveForwardDelay = 2000;
+	private static final double backupDelay = 500;
 	private static final double pickupDownDelay = 1500;
 	private static final double secondDriveForwardDelay = 4000;
 	private static final double pauseBeforeFireDelay = 500;
@@ -39,7 +41,7 @@ public class AutoModeChevalDeFrise extends AutoMode {
     boolean fireAfterCrossing;
     
     
-	public AutoModeChevalDeFrise(Robot robot, boolean fireAfterCrossing, Robot.Turns turn) {
+	public AutoModeChevalDeFriseWithBackup(Robot robot, boolean fireAfterCrossing, Robot.Turns turn) {
 		super(robot);
 		this.fireAfterCrossing = fireAfterCrossing;
 		this.turn = turn;
@@ -70,7 +72,7 @@ public class AutoModeChevalDeFrise extends AutoMode {
 					robot.drive.tankDrive(0, 0);
 					lastEventTime = 0;
 					driveCount++;
-					state = AutoStates.PutPickupDown;
+					state = AutoStates.BackupALittle;
 				} 
 			} else { //second driveforward
 				robot.drive.tankDrive(-0.75,-0.7);
@@ -91,6 +93,17 @@ public class AutoModeChevalDeFrise extends AutoMode {
 						state = AutoStates.Stop;
 					}
 				}
+			}
+			break;
+		case BackupALittle:
+			if(lastEventTime == 0) { 
+				lastEventTime = System.currentTimeMillis();
+			}		
+			robot.drive.tankDrive(0.75, 0.70);
+			if(System.currentTimeMillis() - lastEventTime > backupDelay) {
+				robot.drive.tankDrive(0,0);
+				lastEventTime = 0;
+				state = AutoStates.PutPickupDown;
 			}
 			break;
 		case PutPickupDown:
@@ -172,7 +185,7 @@ public class AutoModeChevalDeFrise extends AutoMode {
 				lastEventTime = 0;
 				state = AutoStates.Stop;
 			}
-			break;
+			break; 
 	
 		case Stop:
 		default:

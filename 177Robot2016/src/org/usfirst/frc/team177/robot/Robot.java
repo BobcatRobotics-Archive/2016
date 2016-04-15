@@ -39,6 +39,7 @@ public class Robot extends IterativeRobot {
     
     final String chevalDeFrise = "Cheval De Frise No Fire";
     final String chevalDeFriseFire = "Cheval De Frise Fire With Vision";
+    final String chevalDeFriseBackupFire = "Cheval De Frise Fire With Backup";
     
     final String driveForwardTransferTurnAndFireVision = "Low Bar Transfer Turn And Fire with Vision";
     final String driveForwardTransferTurnAndFireVisionBackup  = "Low Bar Transfer Turn And Fire with Vision Then Backup";
@@ -201,10 +202,11 @@ public class Robot extends IterativeRobot {
         autoChooser.addObject(lowBarWithVision, 							lowBarWithVision);
         autoChooser.addObject(chevalDeFrise, 								chevalDeFrise);
         autoChooser.addObject(chevalDeFriseFire, 							chevalDeFriseFire);
+        autoChooser.addObject(chevalDeFriseBackupFire,						chevalDeFriseBackupFire);
         autoChooser.addObject(driveForwardTransferTurnAndFireVision,    	driveForwardTransferTurnAndFireVision);
         autoChooser.addObject(driveForwardTransferTurnAndFireVisionBackup, 	driveForwardTransferTurnAndFireVisionBackup);
         autoChooser.addObject(portCullis,									portCullis);
-        autoChooser.addObject(portCullisTransfer,							portCullisTransfer);
+        
         
         SmartDashboard.putData("Auto choices", autoChooser);
         
@@ -325,6 +327,9 @@ public class Robot extends IterativeRobot {
 	    		case chevalDeFriseFire:
 	    			auto = new AutoModeChevalDeFrise(this, true, turnSelected);
 	    			break;
+	    		case chevalDeFriseBackupFire:
+	    			auto = new AutoModeChevalDeFriseWithBackup(this, true, turnSelected);
+	    			break;
 	    		case driveForwardTransferTurnAndFireVision:
 	    			auto = new AutoModeDriveForwardTurnAndFireWithVisionTransfer(this, false);
 	    			break;
@@ -333,10 +338,7 @@ public class Robot extends IterativeRobot {
 	    			break;	   
 	    		case portCullis:
 	    			auto = new AutoModePortCullis(this, turnSelected);
-	    			break;	 
-	    		case portCullisTransfer:
-	    			auto = new AutoModePortCullisTransfer(this, turnSelected);
-	    			break;	 
+	    			break;	 	 
 	    		case doNothing:
 	        	default:
 	        		//Do Nothing
