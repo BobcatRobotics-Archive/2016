@@ -25,9 +25,9 @@ public class AutoModeChevalDeFriseWithBackup extends AutoMode {
 	int driveCount; //iterates so that I dont have duplicate cases
 	//Constants
 	private static final double firstDriveForwardDelay = 2000;
-	private static final double backupDelay = 500;
-	private static final double pickupDownDelay = 1500;
-	private static final double secondDriveForwardDelay = 4000;
+	private static final double backupDelay = 100;
+	private static final double pickupDownDelay = 1000;
+	private static double secondDriveForwardDelay = 4000;
 	private static final double pauseBeforeFireDelay = 500;
 	
 	private static final double[] turnAngles = {30, 10, -15, -20}; //guesses
@@ -48,6 +48,9 @@ public class AutoModeChevalDeFriseWithBackup extends AutoMode {
 		if(turn != Robot.Turns.NoTurn)
 		{
 			turnAngle = turnAngles[turn.getIndex()];
+			if (turn == Robot.Turns.TurnFrom5) {
+				secondDriveForwardDelay += 1000;
+			}
 		}
 		System.out.println("AutoModeChevalDeFrise Constructor");
 	}
@@ -72,7 +75,7 @@ public class AutoModeChevalDeFriseWithBackup extends AutoMode {
 					robot.drive.tankDrive(0, 0);
 					lastEventTime = 0;
 					driveCount++;
-					state = AutoStates.BackupALittle;
+					state = AutoStates.PutPickupDown;
 				} 
 			} else { //second driveforward
 				robot.drive.tankDrive(-0.75,-0.7);
@@ -103,7 +106,7 @@ public class AutoModeChevalDeFriseWithBackup extends AutoMode {
 			if(System.currentTimeMillis() - lastEventTime > backupDelay) {
 				robot.drive.tankDrive(0,0);
 				lastEventTime = 0;
-				state = AutoStates.PutPickupDown;
+				state = AutoStates.DriveForward;
 			}
 			break;
 		case PutPickupDown:
@@ -114,7 +117,7 @@ public class AutoModeChevalDeFriseWithBackup extends AutoMode {
 			robot.drive.tankDrive(0, 0);
 			if (System.currentTimeMillis() - lastEventTime > pickupDownDelay) {	
 				lastEventTime = 0;
-				state = AutoStates.DriveForward;				
+				state = AutoStates.BackupALittle;				
 			}
 			break;
 			

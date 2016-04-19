@@ -433,7 +433,7 @@ public class Robot extends IterativeRobot {
 				climbFourBarPneumatic.set(false);
 				climbPancakePneumatic.set(false);
 				winchMotor.set(0);
-				if(switchPanel.getRawButton(4)) {
+				if(switchPanel.getRawButton(4) || leftStick.getRawButton(3)) {
 					climbState = climbStates.PancakeOut;
 				}
 				break;
@@ -442,7 +442,7 @@ public class Robot extends IterativeRobot {
 					climberEventTime = System.currentTimeMillis();
 				}
 				climbPancakePneumatic.set(true);
-				if(!switchPanel.getRawButton(4)) {
+				if(!switchPanel.getRawButton(4) && !leftStick.getRawButton(3)) {
 					climbState = climbStates.Stowed;
 				}
 				if(System.currentTimeMillis() - climberEventTime > 100) {
@@ -456,7 +456,7 @@ public class Robot extends IterativeRobot {
 				}
 				climbFourBarPneumatic.set(true);
 				winchMotor.set(0);
-				if(!switchPanel.getRawButton(4)) {
+				if(!switchPanel.getRawButton(4) && !leftStick.getRawButton(3)) {
 					climbState = climbStates.Stowed;
 				}
 				if(System.currentTimeMillis() - climberEventTime > 25) { //Magic Delay	
@@ -467,7 +467,7 @@ public class Robot extends IterativeRobot {
 			case Climb:
 				climbFourBarPneumatic.set(true);
 				winchMotor.set((Math.abs(operatorStick.getRawAxis(3)) > 0.5) ? 1 : 0);
-				if(!switchPanel.getRawButton(4)) {
+				if(!switchPanel.getRawButton(4) && !leftStick.getRawButton(3)) {
 					climbState = climbStates.Stowed;
 				}
 				break;
