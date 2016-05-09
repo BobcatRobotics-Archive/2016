@@ -52,7 +52,14 @@ public class Robot extends IterativeRobot {
     final String turnFrom3 = "Turn From 3";
     final String turnFrom4 = "Turn From 4";
     final String turnFrom5 = "Turn From 5";
-    
+    //DONT ASK PLEASE
+    boolean transfer;
+	boolean siderollers;
+	double toproller; //left is in
+	boolean flashlight;
+	boolean shoot;
+	boolean deploy;
+	double winch;
     public enum Turns {
 		NoTurn(-1),
 		TurnFrom2(0),
@@ -159,7 +166,7 @@ public class Robot extends IterativeRobot {
     private climbStates climbState = climbStates.Stowed;
     
     //Controller Mapping
-    //Controller
+    //Controller ALL JOYSTICK ALL THE WAY
     private static final int ButtonFire = 1;
     private static final int ButtonAimFire = 2; 
     private static final int ButtonOverrideToggle = 4;
@@ -367,6 +374,28 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
+    	//The most obnoxious thing ever
+    	if (leftStick.getRawButton(4)) {
+    		//Awesome Drive enabled
+    		
+    		transfer = leftStick.getRawButton(1) ? true : false; //realized half an hour later how dumb this is
+    		siderollers = leftStick.getRawButton(2) ? true : false;
+    		toproller = leftStick.getRawAxis(0) * -1; //left is in
+    		flashlight = rightStick.getRawButton(1) ? true : false;
+    		shoot = rightStick.getRawButton(2) ? true : false; //leaving it in anayway
+    		deploy = leftStick.getRawButton(4) ? true : false;
+    		winch = rightStick.getRawAxis(0);
+    	}
+    	else {
+    		//AWWWWWWW
+    		transfer = operatorStick.getRawButton(7);
+    		siderollers = operatorStick.getRawButton(8);
+    		toproller = operatorStick.getRawAxis(1);
+    		flashlight = operatorStick.getRawButton(6);
+    		shoot = operatorStick.getRawButton(1);
+    		deploy = leftStick.getRawButton(4) ? true : false;
+    		winch = operatorStick.getRawAxis(3);
+    	}
     	//Driving
     	double left = leftStick.getRawAxis(axisY);
 		double right = rightStick.getRawAxis(axisY);
@@ -384,17 +413,17 @@ public class Robot extends IterativeRobot {
 		{
 			shiftPneumatic.set(rightStick.getRawButton(ButtonShift));
 		}
-    	transferPneumatic.set(operatorStick.getRawButton(ButtonTransfer) ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-		rollerSideMotor.set(operatorStick.getRawButton(ButtonSideRollers) ? -1 : 0);
-		rollerTopMotor.set(operatorStick.getRawAxis(1) * -1); //Left Stick, y axis
+    	transferPneumatic.set(transfer ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+		rollerSideMotor.set(siderollers ? -1 : 0);
+		rollerTopMotor.set(toproller * -1); //Left Stick, y axis
 		
-		if(operatorStick.getRawButton(ButtonFlashlight) && !lastFlashlightButton)
+		if(flashlight && !lastFlashlightButton)
 		{
 			flashlightOn = !flashlightOn;
 		}
-		lastFlashlightButton = operatorStick.getRawButton(ButtonFlashlight);
+		lastFlashlightButton = flashlight;
 		
-		if(operatorStick.getRawButton(ButtonFire)) {
+		if(shoot) {
 			flashlightOn = false;
 		}
 		
@@ -410,7 +439,7 @@ public class Robot extends IterativeRobot {
 		}
 		else
 		{
-			catapult.loop(operatorStick.getRawButton(ButtonFire), operatorStick.getRawButton(ButtonAimFire));
+			catapult.loop(shoot, operatorStick.getRawButton(ButtonAimFire));
 		}
 		
 		//Locator
@@ -433,7 +462,7 @@ public class Robot extends IterativeRobot {
 				climbFourBarPneumatic.set(false);
 				climbPancakePneumatic.set(false);
 				winchMotor.set(0);
-				if(switchPanel.getRawButton(4) || leftStick.getRawButton(3)) {
+				if(switchPanel.getRawButton(4) || deploy) {
 					climbState = climbStates.PancakeOut;
 				}
 				break;
@@ -466,7 +495,7 @@ public class Robot extends IterativeRobot {
 				break;	
 			case Climb:
 				climbFourBarPneumatic.set(true);
-				winchMotor.set((Math.abs(operatorStick.getRawAxis(3)) > 0.5) ? 1 : 0);
+				winchMotor.set((Math.abs(winch) > 0.5) ? 1 : 0);
 				if(!switchPanel.getRawButton(4) && !leftStick.getRawButton(3)) {
 					climbState = climbStates.Stowed;
 				}
