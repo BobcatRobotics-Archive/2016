@@ -104,7 +104,7 @@ public class AutoModeDriveForwardTurnAndFireWithVisionTransfer extends AutoMode 
     			}
     			if(System.currentTimeMillis() - lastDriveForwardEventTime < 750)
     			{
-    				robot.rollerTopMotor.set(-1);
+    				robot.rollerTopMotor.set(-0.25);
     				robot.rollerSideMotor.set(-1);
     			}
     			else
